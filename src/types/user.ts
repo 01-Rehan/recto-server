@@ -4,8 +4,8 @@ export interface IUser extends Document {
   userName: string;
   fullName: string;
   email: string;
-  passwordHash: string;
-  googleId?: string; // Optional field
+  hashedPassword: string;
+  googleId?: string | undefined; // Optional field
   bio: string;
   avatarImage: string;
   coverImage: string;

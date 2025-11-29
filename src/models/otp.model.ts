@@ -1,7 +1,7 @@
-import { Schema, model,Types, Model } from "mongoose";
+import { Schema, model, Model, Document } from "mongoose";
 import bcrypt from "bcrypt";
 
-interface IOTP {
+export interface IOTP extends Document{
   email: string;
   fullName : string,
   hashedPassword : string,
@@ -9,8 +9,8 @@ interface IOTP {
   expiresAt: Date;
 }
 
-interface IOTPMethods {
-  compareCode(otp:string) : Promise<boolean>;
+export interface IOTPMethods {
+ compareCode(otp: string): Promise<boolean>; 
 }
 
 const EXPIRATION_TIME = 5 * 60 * 1000;
@@ -28,10 +28,12 @@ const OTPSchema = new Schema<IOTP , Model<IOTP, {}, IOTPMethods>,IOTPMethods>({
   hashedPassword: {
     type: String,
     required: true,
+    select : false
   },
   hashedCode: {
     type: String,
     required: true,
+    select : false
   },
   expiresAt: {
     type: Date,
@@ -56,6 +58,7 @@ OTPSchema.pre("save", async function (){
 
 OTPSchema.pre("save", async function () {
   try {
+    if (!this.isModified("hashedPassword")) return;
     const salt = await bcrypt.genSalt(10);
     this.hashedPassword = await bcrypt.hash(this.hashedPassword, salt);
   } catch (err: any) {
@@ -64,7 +67,7 @@ OTPSchema.pre("save", async function () {
   }
 });
 
-OTPSchema.methods.compareCode = async function (otp: string) : Promise<boolean> {
+OTPSchema.methods.compareCode = async function (otp: string) {
   try {
     return await bcrypt.compare(otp, this.hashedCode);
   } catch (err) {

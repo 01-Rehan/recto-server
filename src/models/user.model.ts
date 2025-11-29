@@ -11,7 +11,8 @@ const userSchema = new Schema<
   {
     userName: {
       type: String,
-      default: "",
+      default: null,
+      sparse: true,
       unique: true, // Note: Custom error messages for 'unique' require a plugin or controller logic
     },
     fullName: {
@@ -25,11 +26,10 @@ const userSchema = new Schema<
     },
     googleId: {
       type: String,
-      unique: true,
       default: null,
-      sparse: true, // IMPORTANT: Allows multiple users to have 'null' googleId
+      sparse: true, 
     },
-    passwordHash: {
+    hashedPassword: {
       type: String,
       // Not required, because Google users won't have a password
       select: false,
@@ -54,7 +54,8 @@ const userSchema = new Schema<
 
     refreshToken: {
       type: String,
-      default: "",
+      default: null,
+      select: false
     },
     isVerified: {
       type: Boolean,
@@ -68,7 +69,7 @@ const userSchema = new Schema<
 
 userSchema.methods.comparePassword = async function (password: string) {
   try {
-    return await bcrypt.compare(password, this.passwordHash);
+    return await bcrypt.compare(password, this.hashedPassword);
   } catch (err) {
     console.log("Error comparing password", err);
     return false;
@@ -79,9 +80,8 @@ userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       _id: this._id,
-      userName: this.userName,
-      fullName: this.fullName,
-      email: this.email,
+      email: this.email, 
+      isVerified: this.isVerified,
     },
     process.env.ACCESS_TOKEN_SECRET as Secret,
     {

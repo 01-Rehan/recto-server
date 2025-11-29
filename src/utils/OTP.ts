@@ -20,9 +20,21 @@ export const sendOTP = async (userEmail: string, code: string) => {
       from: `"Recto" <${process.env.EMAIL_FROM}>`,
       to: userEmail,
       subject: "Recto: Your One-Time Verification Code",
-      html: `<p>Hello!</p>
-             <p>Your verification code is <strong>${code}</strong>.</p>
-             <p>This code is valid for 5 minutes.</p>`,
+      html: `<p>Hello,</p>
+            <p>Thank you for initiating the verification process.</p>
+            <p>
+              Your one-time verification code is:
+              <strong style="font-size: 20px; color: #007bff; display: block; margin: 10px 0;">${code}</strong>
+            </p>
+            <p>
+              Please enter this code on the verification screen to continue.
+            </p>
+            <p>
+              **This code will expire in 5 minutes.**
+            </p>
+            <p>If you did not request this code, please ignore this message.</p>
+            <p>Best regards,</p>
+            <p>The Recto Team</p>`,
     });
     console.log("Message sent:", info.messageId);
     return info;
@@ -31,7 +43,3 @@ export const sendOTP = async (userEmail: string, code: string) => {
     throw new ApiError(500, "Error while sending OTP");
   }
 };
-
-export const compareOTP = async (code : string ,hashedCode : string) => {
-    return await bcrypt.compare(code, hashedCode);
-}
