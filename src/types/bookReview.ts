@@ -1,8 +1,9 @@
 import { Types } from "mongoose";
 import { IUser } from "./user";
 import { IBook } from "./book";
+import { Document } from "mongoose";
 
-export interface IReview {
+export interface IReview extends Document {
   _id: Types.ObjectId;
   userId: Types.ObjectId | IUser;
   bookId: Types.ObjectId | IBook;

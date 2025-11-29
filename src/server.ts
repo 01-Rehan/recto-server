@@ -1,23 +1,17 @@
 import dotenv from 'dotenv';
 import connectDB from './db/connection';
-import  express  from 'express';
-import cors from 'cors';
-
+import app from './app';
 
 dotenv.config({
-    path : '../env'
+  path : "./.env"  
 })
 
-const app = express();
-
-app.use(cors({
-    origin : `process.env.CLIENT_URL`
-}))
-
-app.use(express.json({limit:'16kb'}));
-app.use(express.urlencoded({extended:true,limit:'16kb'}));
-app.use(express.static("public"));
-
-
-
-export default app;
+connectDB()
+.then(() => {
+    app.listen(process.env.PORT || 3000, () => {
+        console.log("server running at port :",process.env.PORT || 3000);
+    })
+})
+.catch((err) => {
+    console.log("error while starting server :",err);
+})
