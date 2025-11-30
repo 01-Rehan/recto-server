@@ -23,11 +23,11 @@ const OTPSchema = new Schema<IOTP , Model<IOTP, {}, IOTPMethods>,IOTPMethods>({
   },
   fullName: {
     type: String,
-    required: true,
+    required: false,
   },
   hashedPassword: {
     type: String,
-    required: true,
+    required: false,
     select : false
   },
   hashedCode: {

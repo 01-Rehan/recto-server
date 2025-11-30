@@ -14,6 +14,7 @@ export const VerifyJWT = asyncHandler(
         const token =
           req.cookies?.accessToken ||
           req.header("Authorization")?.replace("Bearer ", "");
+
         if (!token) throw new ApiError(401, "Unauthorized: Access token is missing");
     
         const decodedToken = jwt.verify(
@@ -25,16 +26,8 @@ export const VerifyJWT = asyncHandler(
     
         (req as CustomRequest).user = user;
         next();
-    } catch (error) {
-        const errorMessage =
-        error instanceof jwt.JsonWebTokenError
-          ? "Invalid or expired access token."
-          : "Error during authorization process.";
-
-      // Use the 'error' object from the catch block to log/debug the issue
-      // console.error("JWT Verification Error:", error);
-
-      throw new ApiError(401, errorMessage);
+    } catch (error : any) {
+      throw new ApiError(401, error);
     }
   },
 );

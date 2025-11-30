@@ -2,6 +2,7 @@ import mongoose, { Schema, Model } from "mongoose";
 import { IUser, IUserMethods } from "../types/user"; // Ensure this interface matches the schema
 import bcrypt from "bcrypt";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
+import ApiError from "../utils/ApiError";
 
 const userSchema = new Schema<
   IUser,
@@ -27,25 +28,25 @@ const userSchema = new Schema<
     googleId: {
       type: String,
       default: null,
-      sparse: true, 
+      sparse: true,
     },
     hashedPassword: {
       type: String,
       // Not required, because Google users won't have a password
       select: false,
-      default: "",
+      default: null,
     },
     bio: {
       type: String,
-      default: "",
+      default: null
     },
     avatarImage: {
       type: String,
-      default: "",
+      default: null
     },
     coverImage: {
       type: String,
-      default: "",
+      default: null
     },
     // counters
     followersCount: { type: Number, default: 0 },
@@ -55,7 +56,7 @@ const userSchema = new Schema<
     refreshToken: {
       type: String,
       default: null,
-      select: false
+      select: false,
     },
     isVerified: {
       type: Boolean,
@@ -67,7 +68,18 @@ const userSchema = new Schema<
   },
 );
 
+userSchema.pre("save", async function () {
+  try {
+    if (!this.isModified("hashedPassword")) return;
+    this.hashedPassword = await bcrypt.hash(this.hashedPassword, 10);
+  } catch (err: any) {
+    // Type as any or Error
+    throw err;
+  }
+});
+
 userSchema.methods.comparePassword = async function (password: string) {
+  if(!password || password.trim().length === 0) throw new ApiError(400, "Password cannot be empty");
   try {
     return await bcrypt.compare(password, this.hashedPassword);
   } catch (err) {
@@ -80,7 +92,7 @@ userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       _id: this._id,
-      email: this.email, 
+      email: this.email,
       isVerified: this.isVerified,
     },
     process.env.ACCESS_TOKEN_SECRET as Secret,
