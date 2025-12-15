@@ -4,7 +4,7 @@ import { Document } from "mongoose";
 export interface IBook extends Document {
   _id: Types.ObjectId;
   externalId: string;
-  alternativeIds?: [string];        // ID from the external API (e.g., Google Books/OpenLibrary ID)
+  alternativeIds?: string[] | [string];        // ID from the external API (e.g., Google Books/OpenLibrary ID)
   isbn?: string;
   title: string;
   subtitle?: string;        // Optional: Not all books have subtitles
@@ -17,4 +17,7 @@ export interface IBook extends Document {
   languages: string[];
   coverImage?: string;      // URL to the cover image
   cover_i?: number;         // Specific to OpenLibrary covers
+  isStale? : boolean; // to check if the data is being updated in the last 7 days
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -43,6 +43,6 @@ router.route("/fetch-user-books").get(fetchReadingStatus);
 router.route("/reviews/add").post(addReview);
 router.route("/reviews/:reviewId").patch(updateReview);
 router.route("/reviews/:reviewId").delete(removeReview);
-router.route("/reviews/:reviewId/like").post();
+// router.route("/reviews/:reviewId/like").post();
 
 export default router;

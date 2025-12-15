@@ -1,26 +1,15 @@
 import { asyncHandler } from "../utils/asyncHandler";
 import { Request, Response } from "express";
 import Book from "../models/books.model";
-import axios from "axios";
 import ApiError from "../utils/ApiError";
 import ApiResponse from "../utils/ApiResponse";
-import https from "https";
-import { OpenLibraryFactory } from "../utils/OpenLibraryDataCleaner";
 import { UserBookModel } from "../models/addedBook.model";
 import { CustomRequest } from "../types/customRequest";
 import mongoose from "mongoose";
 import { ReviewModel } from "../models/bookReview.model";
 // import { ReviewLikeModel } from "../models/reviewLike.model";
+import { bookServices } from "../services/book.service";
 
-const openLibClient = axios.create({
-  baseURL: "https://openlibrary.org",
-  httpAgent: new https.Agent({ keepAlive: true }),
-  headers: {
-    "User-Agent": "Recto 1.0 (recto.help@gmail.com)",
-    "Accept-Encoding": "gzip, deflate,compress",
-  },
-  timeout: 5000,
-});
 
 export const getBookController = asyncHandler(
   async (req: Request, res: Response) => {
@@ -31,109 +20,14 @@ export const getBookController = asyncHandler(
       : rest.authors || "";
 
     if (!externalId) {
-      return res.status(400).json({
-        success: false,
-        message: "Book ID is required",
-      });
-    }
-    const existingBook = await Book.findOne({
-      $or: [{ externalId }, { alternativeIds: externalId }],
-    });
-
-    const apiPromise = openLibClient.get(`/works/${externalId}.json`);
-    let duplicateCheckPromise: Promise<any> = Promise.resolve(null);
-
-    // OPTIMIZATION: Only search by title if we DIDN'T find it by ID
-    if (!existingBook && title && authors) {
-      const titleRegex = new RegExp(`^${title}$`, "i");
-
-      duplicateCheckPromise = Book.findOne({
-        title: { $regex: titleRegex },
-        authors: { $regex: authors, $options: "i" },
-      });
+      throw new ApiError(400, "externalId is required");
     }
 
-    if (title && authors) {
-      const titleRegex = new RegExp(`^${title}$`, "i");
-
-      duplicateCheckPromise = Book.findOne({
-        title: { $regex: titleRegex },
-        authors: { $regex: authors, $options: "i" },
-      });
-    }
-    const [apiResponse, duplicateBook] = await Promise.all([
-      apiPromise,
-      duplicateCheckPromise,
-    ]);
-
-    if (apiResponse.status !== 200) {
-      throw new ApiError(404, "Book not found in external source");
-    }
-
-    const newBook = OpenLibraryFactory.normalizeWorkData(
-      apiResponse.data,
-      rest,
-    );
-
-    const targetBook = existingBook || duplicateBook;
-
-    if (targetBook) {
-      let isUpdated = false;
-
-      const newBookDesc = newBook.description || "";
-      const currentBookDesc = targetBook.description || "";
-
-      if (newBookDesc && newBookDesc.length > currentBookDesc.length) {
-        targetBook.description = newBookDesc;
-        isUpdated = true;
-      }
-      // B. Enrich Cover
-      if (!targetBook.coverImage && newBook.coverImage) {
-        targetBook.coverImage = newBook.coverImage;
-        targetBook.cover_i = newBook.cover_i;
-        isUpdated = true;
-      }
-
-      // C. Enrich Subtitle
-      if (!targetBook.subtitle && newBook.subtitle) {
-        targetBook.subtitle = newBook.subtitle;
-        isUpdated = true;
-      }
-
-      // D. Enrich Release Date
-      if (!targetBook.releaseDate && newBook.releaseDate) {
-        targetBook.releaseDate = newBook.releaseDate;
-        isUpdated = true;
-      }
-
-      // Always link the IDs so we find it faster next time
-      // Check if externalId is already the main ID or in alternatives
-      const isIdLinked =
-        targetBook.externalId === externalId ||
-        targetBook.alternativeIds?.includes(externalId);
-
-      if (!isIdLinked) {
-        targetBook.alternativeIds = targetBook.alternativeIds || [];
-        targetBook.alternativeIds.push(externalId);
-        isUpdated = true;
-      }
-
-      if (isUpdated) {
-        await targetBook.save();
-      }
-      return res
-        .status(200)
-        .json(new ApiResponse(200, targetBook, "Book fetched successfully"));
-    }
-
-    if (newBook.externalId !== externalId) {
-      newBook.alternativeIds = [externalId];
-    }
-    const createdBook = await Book.create(newBook);
+    const book = await bookServices.getBook(externalId,title,authors,rest);
 
     return res
       .status(200)
-      .json(new ApiResponse(200, createdBook, "Book fetched successfully"));
+      .json(new ApiResponse(200, book, "Book fetched successfully"));
   },
 );
 
