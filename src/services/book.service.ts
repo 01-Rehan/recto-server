@@ -3,6 +3,7 @@ import https from "https";
 import Book from "../models/books.model";
 import { OpenLibraryFactory } from "../utils/OpenLibraryDataCleaner";
 import ApiError from "../utils/ApiError";
+import { UserBookModel } from "../models/addedBook.model";
 
 const openLibClient = axios.create({
   baseURL: "https://openlibrary.org",
@@ -104,8 +105,8 @@ class BookServices {
 
       if (isUpdated) {
         await targetBook.save();
-      }else{
-        await Book.findByIdAndUpdate(targetBook._id, {updatedAt: new Date()})
+      } else {
+        await Book.findByIdAndUpdate(targetBook._id, { updatedAt: new Date() });
       }
 
       return targetBook;
@@ -116,6 +117,67 @@ class BookServices {
     }
     const createdBook = await Book.create(newBook);
     return createdBook;
+  };
+
+  tbrBook = async (
+    userId: string,
+    bookId: string,
+    status: string,
+    startedAt: Date,
+    finishedAt: Date,
+  ) => {
+
+    try {
+      const updates: any = { status };
+
+      if (status === "wishlist") {
+        updates.startedAt = null;
+        updates.finishedAt = null;
+      } else if (status === "reading") {
+        updates.startedAt = startedAt ? new Date(startedAt) : new Date();
+        updates.finishedAt = null;
+      } else if (status === "finished") {
+        if (startedAt) updates.startedAt = new Date(startedAt);
+        updates.finishedAt = finishedAt ? new Date(finishedAt) : new Date();
+      }
+
+      console.log("Constructed updates object:", updates);
+
+      const userBook = await UserBookModel.findOneAndUpdate(
+        { userId, bookId },
+        {
+          $set: updates,
+          $setOnInsert: {
+            userId,
+            bookId,
+            addedAt: new Date(),
+          },
+        },
+        {
+          new: true,
+          upsert: true,
+        },
+      );
+
+      console.log("Result from findOneAndUpdate:", userBook);
+      console.log("---------------------------------");
+      return userBook;
+    } catch (error) {
+      console.error("!!! Critical error in tbrBook service !!!", error);
+      console.log("---------------------------------");
+      throw error; // Re-throw the error to be handled by asyncHandler
+    }
+  };
+
+  tbrRemoveBook = async (userId: string, bookId: string) => {
+    return await UserBookModel.findOneAndDelete({ userId, bookId });
+  };
+
+  fetchBooksBasedOnStatus = async (userId: string, status: string) => {
+    return await UserBookModel.find({
+      userId,
+      status: status,
+    }).populate("bookId", "title authors coverImage externalId ");
   };
 }
 

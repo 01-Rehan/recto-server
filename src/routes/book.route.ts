@@ -3,11 +3,13 @@ import {
   getBookController,
   tbrBookController,
   removeTbrBookController,
-  fetchReadingStatus,
+  fetchBooksBasedOnStatus,
+} from "../controller/book.controller";
+import {
   addReview,
   removeReview,
   updateReview,
-} from "../controller/book.controller";
+} from "../controller/reviews.controller";
 import { VerifyJWT } from "../middlewares/auth.middleware";
 
 const router = Router();
@@ -26,19 +28,17 @@ const router = Router();
 //     manageContentController
 // );
 
-
 // for all users (without the JWT token)
 router.route("/getbook").post(getBookController);
 
-
-// Protected Routes 
+// Protected Routes
 
 router.use(VerifyJWT);
 
 router.route("/tbrbook").post(tbrBookController);
 router.route("/remove-tbrbook").delete(removeTbrBookController);
 
-router.route("/fetch-user-books").get(fetchReadingStatus);
+router.route("/fetch-user-books").get(fetchBooksBasedOnStatus);
 
 router.route("/reviews/add").post(addReview);
 router.route("/reviews/:reviewId").patch(updateReview);

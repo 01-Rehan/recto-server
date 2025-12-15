@@ -103,7 +103,7 @@ userSchema.methods.generateAccessToken = function () {
     },
     process.env.ACCESS_TOKEN_SECRET as Secret,
     {
-      expiresIn: process.env.ACCESS_TOKEN_EXPIRE || "15m", // Fallback is good practice
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRE || "15m",
     } as SignOptions,
   );
 };
