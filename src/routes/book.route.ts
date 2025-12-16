@@ -1,5 +1,6 @@
 import { Router } from "express";
 import BookValidationSchema from "../validation/book.schema";
+import bookReviewSchema from "../validation/bookReview.schema";
 import validate from "../middlewares/validate.middleware";
 import {
   getBookController,
@@ -55,10 +56,18 @@ router
   );
 
 // Review CRUD
-router.route("/reviews/add").post(addReview);
-router.route("/reviews/:bookId").get(getAllReviewsForBook);
-router.route("/reviews/:reviewId").patch(updateReview);
-router.route("/reviews/:reviewId").delete(removeReview);
+router
+  .route("/reviews/add")
+  .post(validate(bookReviewSchema.addReview), addReview);
+router
+  .route("/reviews/:bookId")
+  .get(validate(bookReviewSchema.getAllReviewsForBook), getAllReviewsForBook);
+router
+  .route("/reviews/:reviewId")
+  .patch(validate(bookReviewSchema.updateReview), updateReview);
+router
+  .route("/reviews/:reviewId")
+  .delete(validate(bookReviewSchema.removeReview), removeReview);
 
 // router.route("/reviews/:reviewId/like").post();
 

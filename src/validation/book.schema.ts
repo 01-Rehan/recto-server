@@ -44,6 +44,8 @@ class BookValidationSchema {
       params: z.object({}).optional(),
     })
     .strict();
+
+    
 }
 
 export default new BookValidationSchema();
