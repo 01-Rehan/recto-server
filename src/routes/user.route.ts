@@ -19,46 +19,78 @@ import {
 } from "../controller/user.controller";
 import { VerifyJWT } from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/multer.middleware";
+import validate from "../middlewares/validate.middleware";
+import userSchema from "../validation/user.schema";
 
 const router = Router();
 
-router.route("/signup").post(signup);
-router.route("/signup-verify").post(VerifyOTPSaveUser);
-router.route("/signin").post(signin);
-router.route("/refresh-accesstoken").post(refreshAccessToken);
+// --- Auth Routes ---
+router.route("/signup").post(validate(userSchema.signUp), signup);
 
-// The entry point. Frontend links <a href=".../google"> here for google auths
+router
+  .route("/signup-verify")
+  .post(validate(userSchema.verifyOTP), VerifyOTPSaveUser);
+
+router.route("/signin").post(validate(userSchema.signIn), signin);
+
+router
+  .route("/refresh-accesstoken")
+  .post(validate(userSchema.refreshToken), refreshAccessToken);
+
+// --- Google Auth ---
+// Frontend links <a href=".../google"> here
 router.route("/google").get(googleAuthRedirect);
 router.route("/google/callback").get(googleAuthCallback);
 
-// for change to reset passwords
-router.route("/password-otp").post(forgotPassword);
-router.route("/password-otp-verify").post(verifyOTPforPasswordChange);
-router.route("/new-password").post(newPassword);
-router.route("/change-password").post(VerifyJWT, changePassword);
+// --- Password Reset Flow ---
+router
+  .route("/password-otp")
+  .post(validate(userSchema.forgotPassword), forgotPassword);
 
-// secured routes
+router
+  .route("/password-otp-verify")
+  .post(
+    validate(userSchema.verifyOTPforPasswordChange),
+    verifyOTPforPasswordChange,
+  );
+
+router
+  .route("/new-password")
+  .post(validate(userSchema.newPassword), newPassword);
+
+// --- Protected Routes ---
+
+// Change Password (Needs Auth + Validation)
+router
+  .route("/change-password")
+  .post(VerifyJWT, validate(userSchema.changePassword), changePassword);
+
 router.route("/logout").post(VerifyJWT, logout);
 
-router.route("/update-profile").post(VerifyJWT, updateProfile);
-router.route("/update-email").post(VerifyJWT, updateEmail);
-router.route("/update-profileimage").post(
+// Profile Updates
+// Note: Changed to .patch() is standard for partial updates, but .post() works too.
+router
+  .route("/update-profile")
+  .patch(VerifyJWT, validate(userSchema.updateProfile), updateProfile);
+
+router.route("/update-email").patch(VerifyJWT, updateEmail); // Add validation if you create a schema for this later
+
+// File Uploads
+// Note: Multer ('upload') must run BEFORE validation if you add text fields to this request later
+router.route("/update-profileimage").patch(
   VerifyJWT,
   upload.fields([
-    {
-      name: "avatarImage",
-      maxCount: 1,
-    },
-    {
-      name: "coverImage",
-      maxCount: 1,
-    },
+    { name: "avatarImage", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
   ]),
   updateAvatarAndBanner,
 );
 
-router.route("/check").get(userNameAvailability);
+// Utility
+router
+  .route("/check")
+  .get(validate(userSchema.userNameAvailability), userNameAvailability);
 
-router.route("/whoami").get(VerifyJWT,whoami);
+router.route("/whoami").get(VerifyJWT, whoami);
 
 export default router;

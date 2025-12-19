@@ -11,7 +11,7 @@ interface IReviewLike {
 const ReviewLikeSchema = new Schema<IReviewLike>({
     reviewId: {
         type: Schema.Types.ObjectId,
-        ref: "Review",
+        ref: "BookReview",
         required: true,
     },
     userId: {

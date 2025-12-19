@@ -3,6 +3,7 @@ import { IUser, IUserMethods } from "../types/user"; // Ensure this interface ma
 import bcrypt from "bcrypt";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import ApiError from "../utils/ApiError";
+import { ROLES } from "../constant";
 
 const userSchema = new Schema<
   IUser,
@@ -32,7 +33,6 @@ const userSchema = new Schema<
     },
     hashedPassword: {
       type: String,
-      // Not required, because Google users won't have a password
       select: false,
       default: null,
     },
@@ -48,6 +48,7 @@ const userSchema = new Schema<
       type: String,
       default: null
     },
+    
     // counters
     followersCount: { type: Number, default: 0 },
     followingCount: { type: Number, default: 0 },
@@ -57,6 +58,11 @@ const userSchema = new Schema<
       type: String,
       default: null,
       select: false,
+    },
+    role: {
+      type: String,
+      enum: ROLES,
+      default: "user",
     },
     isVerified: {
       type: Boolean,
@@ -92,12 +98,12 @@ userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       _id: this._id,
-      email: this.email,
+      role: this.role,
       isVerified: this.isVerified,
     },
     process.env.ACCESS_TOKEN_SECRET as Secret,
     {
-      expiresIn: process.env.ACCESS_TOKEN_EXPIRE || "15m", // Fallback is good practice
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRE,
     } as SignOptions,
   );
 };
@@ -109,7 +115,7 @@ userSchema.methods.generateRefreshToken = function () {
     },
     process.env.REFRESH_TOKEN_SECRET as Secret,
     {
-      expiresIn: process.env.REFRESH_TOKEN_EXPIRE || "7d",
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRE,
     } as SignOptions,
   );
 };

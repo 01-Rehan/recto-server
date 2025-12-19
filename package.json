@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "dev": "nodemon -r dotenv/config src/server.ts",
-    "build": "tsc", 
-    "start": "node dist/server.js", 
+    "dev": "nodemon src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "prestart": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,7 +17,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.0.0",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.11"
+    "nodemailer": "^7.0.11",
+    "ts-node": "^10.9.2",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -29,7 +31,6 @@
     "@types/nodemailer": "^7.0.4",
     "nodemon": "^3.1.11",
     "prettier": "^3.7.0",
-    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "name": "recto-server",

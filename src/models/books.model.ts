@@ -50,6 +50,10 @@ const bookSchema = new mongoose.Schema<IBook>(
     cover_i: {
       type: Number,
     },
+    isStale: {
+      type: Boolean,
+      default: false,
+    },
     alternativeIds: {
       type: [String], 
       default: [],

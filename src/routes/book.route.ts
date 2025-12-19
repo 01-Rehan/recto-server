@@ -1,23 +1,74 @@
 import { Router } from "express";
+import BookValidationSchema from "../validation/book.schema";
+import bookReviewSchema from "../validation/bookReview.schema";
+import validate from "../middlewares/validate.middleware";
 import {
   getBookController,
   tbrBookController,
   removeTbrBookController,
-  fetchReadingStatus,
-  addReview,
-  removeReview
+  fetchBooksBasedOnStatus,
 } from "../controller/book.controller";
+import {
+  addReview,
+  removeReview,
+  updateReview,
+  getAllReviewsForBook,
+} from "../controller/reviews.controller";
 import { VerifyJWT } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-router.route("/getbook").post(getBookController);
-router.route("/tbrbook").post(VerifyJWT, tbrBookController);
-router.route("/remove-tbrbook").delete(VerifyJWT, removeTbrBookController);
+// Ex for different roles like admin \ librarian \ moderators
+//   router.route("/stats").get(
+//     VerifyJWT,
+//     VerifyRole(["admin"]),
+//     getSystemStats
+// );
 
-router.route("/fetch-user-books").get(VerifyJWT, fetchReadingStatus);
+// // Example: Allow multiple roles
+// router.route("/manage-content").patch(
+//     VerifyJWT,
+//     VerifyRole(["admin", "moderator"]),
+//     manageContentController
+// );
 
-router.route("/add-review").post(VerifyJWT, addReview);
-router.route("/remove-review").delete(VerifyJWT, removeReview);
+// for all users (without the JWT token)
+router
+  .route("/getbook")
+  .post(validate(BookValidationSchema.createBook), getBookController);
+
+// Protected Routes
+router.use(VerifyJWT);
+router
+  .route("/tbrbook")
+  .post(validate(BookValidationSchema.tbrBook), tbrBookController);
+router
+  .route("/tbrbook/:tbrId")
+  .delete(
+    validate(BookValidationSchema.tbrRemoveBook),
+    removeTbrBookController,
+  );
+router
+  .route("/fetch-user-books")
+  .get(
+    validate(BookValidationSchema.fetchBooksBasedOnStatus),
+    fetchBooksBasedOnStatus,
+  );
+
+// Review CRUD
+router
+  .route("/reviews/add")
+  .post(validate(bookReviewSchema.addReview), addReview);
+router
+  .route("/reviews/:bookId")
+  .get(validate(bookReviewSchema.getAllReviewsForBook), getAllReviewsForBook);
+router
+  .route("/reviews/:reviewId")
+  .patch(validate(bookReviewSchema.updateReview), updateReview);
+router
+  .route("/reviews/:reviewId")
+  .delete(validate(bookReviewSchema.removeReview), removeReview);
+
+// router.route("/reviews/:reviewId/like").post();
 
 export default router;
