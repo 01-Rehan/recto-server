@@ -1,10 +1,12 @@
-import { Types,Schema,model } from "mongoose";
+import { Types,Schema,model,HydratedDocument } from "mongoose";
 import { IUser } from "../types/user";
 
 interface IFollower {
     followerId: Types.ObjectId | IUser;
     followingId: Types.ObjectId | IUser;
 }
+
+export type IFollowerDocument = HydratedDocument<IFollower>;
 
 const FollowerSchema = new Schema<IFollower>({
     followerId: {

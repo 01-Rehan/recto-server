@@ -1,12 +1,25 @@
 import { Router } from "express";
-import { followUser, unfollowUser, fetchFollowers, fetchFollowing } from "../controller/connection.controller";
+import {
+  followUser,
+  unfollowUser,
+  fetchFollowers,
+  fetchFollowing,
+  myFollowers,
+  myFollowing,
+} from "../controller/connection.controller";
 import { VerifyJWT } from "../middlewares/auth.middleware";
 
-const router= Router();
+const router = Router();
 
-router.route("/follow/:userId").post(VerifyJWT,followUser);
-router.route("/unfollow/:userId").post(VerifyJWT,unfollowUser);
-router.route("/followers").get(VerifyJWT,fetchFollowers);
-router.route("/following").get(VerifyJWT,fetchFollowing);
+router.route("/followers").get(fetchFollowers);
+router.route("/following").get(fetchFollowing);
+
+router.use(VerifyJWT);
+
+router.route("/follow/:userId").post(followUser);
+router.route("/unfollow/:userId").delete(unfollowUser);
+
+router.route("/myfollowers").get(myFollowers);
+router.route("/myfollowings").get(myFollowing);
 
 export default router;

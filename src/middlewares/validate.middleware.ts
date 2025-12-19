@@ -10,18 +10,21 @@ const validate =
         body: req.body || {},
         query: req.query || {},
         params: req.params || {},
+        cookies: req.cookies || {},
+        headers: req.headers || {},
       });
 
       req.body = result.body;
 
-      Object.defineProperty(req, 'params', {
-        value: result.params,
-        configurable: true,
-        writable: true
-      });
+      if (result.params) {
+        Object.defineProperty(req, 'params', {
+          value: result.params,
+          configurable: true,
+          writable: true
+        });
+      }
 
-      if (Object.keys(result.query as object).length > 0) {
-        // Option A: If query is empty, do nothing. 
+      if (result.query) {
         // Option B: clear and assign (for strictness)
          for (const key in req.query) {
              delete (req.query as any)[key];
