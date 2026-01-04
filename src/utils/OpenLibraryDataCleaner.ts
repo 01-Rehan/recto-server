@@ -51,12 +51,6 @@ export const OpenLibraryFactory = {
     return typeof desc === "string" ? desc : desc.value || "";
   },
 
-  /**
-   * TRANSFORMER: From Work API JSON -> Partial Book Object
-   * * @param workData - The raw JSON from https://openlibrary.org/works/{ID}.json
-   * @param fallbackData - (Optional) Partial data you might already have (like author names from a search)
-   * because the Work API often only provides Author IDs, not names.
-   */
   normalizeWorkData: (
     workData: IOpenLibraryWork,
     fallbackData?: Partial<IBook>,
@@ -83,7 +77,6 @@ export const OpenLibraryFactory = {
     return {
       externalId: workData.key.replace("/works/", ""),
       title: fallbackData?.title?.trim() || workData.title,
-      // Work API doesn't usually provide subtitles directly in the main object
       subtitle: workData.subtitle || "",
       authors: authors,
       description: OpenLibraryFactory.getDescription(workData.description),
@@ -95,11 +88,12 @@ export const OpenLibraryFactory = {
         : fallbackData?.genres || [],
       cover_i: coverId,
       coverImage: OpenLibraryFactory.getCoverUrl(coverId),
-      // ISBNs are specific to Editions, not Works, so we rely on fallback or leave empty
-      isbn:
-        workData.links?.find((link) => link.title === "ISBN")?.url ||
-        fallbackData?.isbn,
-      languages: fallbackData?.languages || [],
+      links: workData.links
+        ? workData.links.map((link) => ({
+            title: link.title,
+            url: link.url,
+          }))
+        : fallbackData?.links || [],
     };
   },
 };

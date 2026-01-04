@@ -1,6 +1,6 @@
-import { bookQueryService } from "./book/book.query.service";
-import ApiError from "../utils/ApiError";
-import { UserBookModel } from "../models/addedBook.model";
+import { bookQueryService } from "./book.query.service";
+import ApiError from "../../utils/ApiError";
+import { UserBookModel } from "../../models/addedBook.model";
 
 /**
  * BookService - OPTIMIZED for fast responses

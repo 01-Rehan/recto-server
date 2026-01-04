@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import ApiError from "../utils/ApiError";
 import ApiResponse from "../utils/ApiResponse";
 import { CustomRequest } from "../types/customRequest";
-import { bookServices } from "../services/book.service";
+import { bookServices } from "../services/book/book.service";
 
 /**
  * Get Book Controller (OPTIMIZED)

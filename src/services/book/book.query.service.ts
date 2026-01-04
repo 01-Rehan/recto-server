@@ -23,122 +23,342 @@ const openLibClient = axios.create({
 
 class BookQueryService {
   /**
-   * PRIMARY METHOD: Fast Book Resolution (OPTIMIZED)
+   * PRIMARY METHOD: Fast Book Resolution with Smart Enrichment (OPTIMIZED)
    *
-   * IMPROVEMENTS:
-   * 1. Parallel DB lookups when possible
-   * 2. Index-optimized queries
-   * 3. Early returns to minimize work
-   * 4. Lean queries for read-only operations
-   * 5. Reduced timeout for faster failures
+   * FLOW:
+   * 1. Find book by externalId or alternativeIds (single efficient query)
+   * 2. If not found, try title+authors fallback
+   * 3. If found: Check staleness (7 days), enrich if needed, update timestamp
+   * 4. If not found: Fetch from API, create new document
    *
-   * TARGET: <100ms for cached hits, <300ms for cache misses
+   * IMPROVEMENTS OVER ORIGINAL:
+   * - Uses $or query for ID lookups (single DB call instead of 2)
+   * - Parallel title+author lookup only if needed
+   * - Staleness check prevents unnecessary API calls
+   * - Single save operation for updates
+   * - Efficient enrichment (only fetch if stale or missing critical data)
+   *
+   * TARGET: <50ms cache hits, <300ms for API fetch
    */
   resolveBook = async (
-    workId: string,
+    externalId: string,
     title?: string,
     authors?: string[],
     otherInfo?: Record<string, any>,
   ): Promise<IBook> => {
-    // --- STEP 1: Parallel Database Lookup (OPTIMIZED) ---
-    // Run both queries in parallel if we have title and authors
-    let book: IBook | null = null;
+    const STALE_THRESHOLD = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
-    if (title && authors) {
-      // Execute both lookups simultaneously
-      const [workIdResult, titleAuthorResult] = await Promise.all([
-        this.findByWorkId(workId),
-        this.findByTitleAndAuthors(title, authors),
-      ]);
+    // --- STEP 1: Efficient ID Lookup (Single $or query) ---
+    let targetBook = await Book.findOne({
+      $or: [{ externalId }, { alternativeIds: externalId }],
+    }).exec();
 
-      book = workIdResult || titleAuthorResult;
-    } else {
-      // Only workId lookup if no fallback data
-      book = await this.findByWorkId(workId);
+    // --- STEP 2: Fallback to Title+Authors (Only if ID lookup fails) ---
+    if (!targetBook && title && authors) {
+      targetBook = await this.findByTitleAndAuthors(title, authors);
     }
 
-    // --- STEP 2: Early Return on Cache Hit ---
-    if (book) {
-      return book as IBook;
-    }
-
-    // --- STEP 3: Fetch Work Data (Only on Cache Miss) ---
-    let workData;
-    try {
-      const response = await openLibClient.get(`/works/${workId}.json`);
-      workData = response.data;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        throw new ApiError(404, "Book not found in Open Library");
+    // --- STEP 3: Staleness Check & Alternative WorkId Detection ---
+    let shouldFetch = true;
+    if (targetBook) {
+      // Check if this is an alternative workId (different from primary)
+      const isAlternativeWorkId = 
+        targetBook.externalId !== externalId &&
+        !targetBook.alternativeIds?.includes(externalId);
+      
+      const isStale =
+        targetBook.updatedAt.getTime() < Date.now() - STALE_THRESHOLD;
+      
+      // If not stale AND not an alternative workId, return immediately
+      if (!isStale && !isAlternativeWorkId) {
+        return targetBook;
       }
-      if (error.code === "ECONNABORTED") {
-        throw new ApiError(504, "OpenLibrary request timeout");
-      }
-      throw new ApiError(500, "Failed to fetch from Open Library");
+      
+      // If stale OR alternative workId, fetch and enrich
+      shouldFetch = true;
     }
 
-    // --- STEP 4: Normalize ---
-    const normalized = OpenLibraryFactory.normalizeWorkData(workData, {
+    // --- STEP 4: Fetch from API (if needed) ---
+    let apiData;
+    let enrichmentNeeded = false;
+
+    if (shouldFetch) {
+      try {
+        const response = await openLibClient.get(`/works/${externalId}.json`);
+        apiData = response.data;
+        enrichmentNeeded = true;
+      } catch (error: any) {
+        // API call failed - return existing book if available
+        if (targetBook) {
+          return targetBook;
+        }
+        if (error.response?.status === 404) {
+          throw new ApiError(404, "Book not found in Open Library");
+        }
+        throw new ApiError(500, "Failed to fetch from Open Library");
+      }
+    }
+
+    // --- STEP 5: Normalize API Data ---
+    const newBook = OpenLibraryFactory.normalizeWorkData(apiData, {
       title,
       authors,
       ...otherInfo,
     });
 
-    // --- STEP 5: Save to DB (Non-blocking response possible) ---
-    book = await Book.create(normalized);
+    // --- STEP 6: Enrichment & ID Linking ---
+    if (targetBook && enrichmentNeeded) {
+      // Enrich existing document with new data
+      let isUpdated = false;
 
-    return book;
+      // A. Description enrichment (prefer longer)
+      const newDesc = newBook.description || "";
+      const currentDesc = targetBook.description || "";
+      if (newDesc && newDesc.length > currentDesc.length) {
+        targetBook.description = newDesc;
+        isUpdated = true;
+      }
+
+      // B. Cover enrichment (fill if missing)
+      if (!targetBook.coverImage && newBook.coverImage) {
+        targetBook.coverImage = newBook.coverImage;
+        targetBook.cover_i = newBook.cover_i;
+        isUpdated = true;
+      }
+
+      // C. Subtitle enrichment (fill if missing)
+      if (!targetBook.subtitle && newBook.subtitle) {
+        targetBook.subtitle = newBook.subtitle;
+        isUpdated = true;
+      }
+
+      // D. Release date enrichment (fill if missing)
+      if (!targetBook.releaseDate && newBook.releaseDate) {
+        targetBook.releaseDate = newBook.releaseDate;
+        isUpdated = true;
+      }
+
+      // E. Author enrichment (merge if new data has additional authors)
+      if (newBook.authors && newBook.authors.length > 0) {
+        const mergedAuthors = this.mergeAuthors(targetBook.authors, newBook.authors);
+        if (mergedAuthors.length > targetBook.authors.length) {
+          targetBook.authors = mergedAuthors;
+          isUpdated = true;
+        }
+      }
+
+      // F. Genre enrichment (merge if new data has additional genres)
+      if (newBook.genres && newBook.genres.length > 0) {
+        const mergedGenres = this.mergeGenres(targetBook.genres || [], newBook.genres);
+        if (mergedGenres.length > (targetBook.genres?.length || 0)) {
+          targetBook.genres = mergedGenres;
+          isUpdated = true;
+        }
+      }
+
+      // G. Track alternative IDs for faster future lookups
+      const isIdLinked =
+        targetBook.externalId === externalId ||
+        targetBook.alternativeIds?.includes(externalId);
+
+      if (!isIdLinked) {
+        if (!targetBook.alternativeIds) {
+          targetBook.alternativeIds = [];
+        }
+        targetBook.alternativeIds.push(externalId);
+        isUpdated = true;
+      }
+
+      // Save if enriched, otherwise just update timestamp
+      if (isUpdated) {
+        await targetBook.save();
+      } else {
+        // Update only timestamp without full save
+        await Book.findByIdAndUpdate(targetBook._id, { 
+          updatedAt: new Date() 
+        });
+      }
+
+      return targetBook;
+    }
+
+    // --- STEP 7: Create New Document (if book not found) ---
+    if (newBook.externalId !== externalId) {
+      newBook.alternativeIds = [externalId];
+    }
+
+    const createdBook = await Book.create(newBook);
+    return createdBook;
   };
 
   /**
-   * Find existing book by workId (OPTIMIZED with lean)
-   * Uses workId index for O(1) lookup
-   */
-  private findByWorkId = async (workId: string): Promise<IBook | null> => {
-    return await Book.findOne({ workId })
-      .select("-__v")              // Exclude version key
-      .lean<IBook>()               // Return plain object (faster)
-      .exec();
-  };
-
-  /**
-   * Find by title + authors (OPTIMIZED)
-   * Uses compound text index when possible
+   * Smart Title+Authors Matching
+   * Tries multiple strategies to find same book with different title variations
    */
   private findByTitleAndAuthors = async (
     title: string,
     authors: string[],
-  ): Promise<IBook | null> => {
-    // Try exact match first (uses index)
+  ) => {
+    // Strategy 1: Exact title + exact authors match (case-insensitive)
+    const exactRegex = new RegExp(`^${this.escapeRegex(title)}$`, "i");
     let book = await Book.findOne({
-      title: title,
+      title: { $regex: exactRegex },
       authors: { $all: authors },
-    })
-      .select("-__v")
-      .lean<IBook>()
-      .exec();
+    }).exec();
 
-    // Fallback to case-insensitive if no exact match
-    if (!book && title && authors.length > 0) {
-      const titleRegex = new RegExp(`^${this.escapeRegex(title)}$`, "i");
+    if (book) return book;
+
+    // Strategy 2: Exact title + partial author match
+    // (Handles cases where one edition has additional editors/translators)
+    if (authors.length > 0) {
       book = await Book.findOne({
-        title: { $regex: titleRegex },
-        authors: { $all: authors },
-      })
-        .select("-__v")
-        .lean<IBook>()
-        .exec();
+        title: { $regex: exactRegex },
+        authors: { $in: authors }, // At least one author matches
+      }).exec();
+
+      // Verify it's a reasonable match (at least one primary author matches)
+      if (book && this.hasCommonAuthors(book.authors, authors)) {
+        return book;
+      }
     }
 
-    return book;
+    // Strategy 3: Normalized title match (remove common separators and extras)
+    const normalizedTitle = this.normalizeTitle(title);
+    
+    // Find books with at least one matching author
+    const candidateBooks = await Book.find({
+      authors: { $in: authors },
+    })
+      .select("title authors externalId alternativeIds")
+      .lean<IBook[]>()
+      .exec();
+
+    // Check if any candidate has a matching normalized title AND common authors
+    for (const candidate of candidateBooks) {
+      const candidateNormalized = this.normalizeTitle(candidate.title);
+      
+      // Check for substring match (handles bundled editions)
+      const titleMatches = 
+        candidateNormalized.includes(normalizedTitle) ||
+        normalizedTitle.includes(candidateNormalized);
+
+      const hasCommonAuthors = this.hasCommonAuthors(candidate.authors, authors);
+
+      if (titleMatches && hasCommonAuthors) {
+        // Return full document
+        return await Book.findById(candidate._id).exec();
+      }
+    }
+
+    return null;
   };
 
   /**
-   * Escape regex special characters for safe regex queries
+   * Check if two author lists have significant overlap
+   * Returns true if at least one author name matches (case-insensitive, normalized)
+   */
+  private hasCommonAuthors = (authors1: string[], authors2: string[]): boolean => {
+    if (!authors1 || !authors2 || authors1.length === 0 || authors2.length === 0) {
+      return false;
+    }
+
+    // Normalize author names for comparison
+    const normalized1 = authors1.map(a => this.normalizeAuthorName(a));
+    const normalized2 = authors2.map(a => this.normalizeAuthorName(a));
+
+    // Check if any author appears in both lists
+    return normalized1.some(a1 => 
+      normalized2.some(a2 => 
+        a1.includes(a2) || a2.includes(a1)
+      )
+    );
+  };
+
+  /**
+   * Normalize author name for better matching
+   * - Lowercase
+   * - Remove extra spaces
+   * - Remove common suffixes (Jr., Sr., etc.)
+   */
+  private normalizeAuthorName = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/\s+(jr\.?|sr\.?|ii|iii|iv)$/i, "") // Remove suffixes
+      .replace(/\s+/g, " ") // Normalize whitespace
+      .trim();
+  };
+
+  /**
+   * Merge two author lists, avoiding duplicates
+   * Returns combined list with unique authors (case-insensitive comparison)
+   */
+  private mergeAuthors = (existing: string[], newAuthors: string[]): string[] => {
+    const merged = [...existing];
+    const normalizedExisting = existing.map(a => this.normalizeAuthorName(a));
+
+    for (const newAuthor of newAuthors) {
+      const normalizedNew = this.normalizeAuthorName(newAuthor);
+      
+      // Only add if not already present (case-insensitive check)
+      const isDuplicate = normalizedExisting.some(existingNorm => 
+        existingNorm === normalizedNew || 
+        existingNorm.includes(normalizedNew) || 
+        normalizedNew.includes(existingNorm)
+      );
+
+      if (!isDuplicate) {
+        merged.push(newAuthor);
+        normalizedExisting.push(normalizedNew);
+      }
+    }
+
+    return merged;
+  };
+
+  /**
+   * Merge two genre lists, avoiding duplicates
+   * Returns combined list with unique genres (case-insensitive comparison)
+   */
+  private mergeGenres = (existing: string[], newGenres: string[]): string[] => {
+    const merged = [...existing];
+    const normalizedExisting = existing.map(g => g.toLowerCase().trim());
+
+    for (const newGenre of newGenres) {
+      const normalizedNew = newGenre.toLowerCase().trim();
+      
+      // Only add if not already present (case-insensitive check)
+      if (!normalizedExisting.includes(normalizedNew)) {
+        merged.push(newGenre);
+        normalizedExisting.push(normalizedNew);
+      }
+    }
+
+    return merged;
+  };
+
+  /**
+   * Normalize title for better matching
+   * - Converts to lowercase
+   * - Removes common separators (-, :, |)
+   * - Removes extra whitespace
+   * - Removes articles (the, a, an)
+   */
+  private normalizeTitle = (title: string): string => {
+    return title
+      .toLowerCase()
+      .replace(/^(the|a|an)\s+/i, "") // Remove leading articles
+      .replace(/[:\-|–—]/g, " ") // Replace separators with space
+      .replace(/\s+/g, " ") // Normalize whitespace
+      .trim();
+  };
+
+  /**
+   * Escape regex special characters
    */
   private escapeRegex = (str: string): string => {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   };
+
 }
 
 export const bookQueryService = new BookQueryService();
