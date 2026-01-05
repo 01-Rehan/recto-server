@@ -5,7 +5,6 @@ export interface IBook extends Document {
   _id: Types.ObjectId;
   externalId: string;
   alternativeIds?: string[] | [string];        // ID from the external API (e.g., Google Books/OpenLibrary ID)
-  isbn?: string;
   title: string;
   subtitle?: string;        // Optional: Not all books have subtitles
   authors: string[];
@@ -17,7 +16,9 @@ export interface IBook extends Document {
   languages: string[];
   coverImage?: string;      // URL to the cover image
   cover_i?: number;         // Specific to OpenLibrary covers
+  isbn13?: string;
   isStale? : boolean; // to check if the data is being updated in the last 7 days
+  links?: { title: string; url: string; }[];
   createdAt: Date;
   updatedAt: Date;
 }

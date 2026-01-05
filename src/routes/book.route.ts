@@ -7,6 +7,7 @@ import {
   tbrBookController,
   removeTbrBookController,
   fetchBooksBasedOnStatus,
+  getPurchaseLinksController,
 } from "../controller/book.controller";
 import {
   addReview,
@@ -36,6 +37,9 @@ const router = Router();
 router
   .route("/getbook")
   .post(validate(BookValidationSchema.createBook), getBookController);
+
+// Purchase links endpoint (public access)
+router.route("/purchase-links/:bookId").get(getPurchaseLinksController);
 
 // Protected Routes
 router.use(VerifyJWT);
