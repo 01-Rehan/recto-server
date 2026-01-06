@@ -22,11 +22,13 @@ import UserRouter from "./routes/user.route";
 import SearchRouter from "./routes/search.route";
 import BookRouter from "./routes/book.route";
 import ConnectionRouter from "./routes/connection.route";
+import ListRouter from "./routes/list.route";
 
 // define the route
 app.use("/api/v1/user", UserRouter);
 app.use("/api/v1/search", SearchRouter);
 app.use("/api/v1/books", BookRouter);
 app.use("/api/v1/connection", ConnectionRouter);
+app.use("/api/v1/lists", ListRouter);
 
 export default app;
