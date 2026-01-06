@@ -44,7 +44,6 @@ class BookQueryService {
     externalId: string,
     title?: string,
     authors?: string[],
-    otherInfo?: Record<string, any>,
   ): Promise<IBook> => {
     const STALE_THRESHOLD = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
@@ -109,7 +108,6 @@ class BookQueryService {
     const newBook = OpenLibraryFactory.normalizeWorkData(apiData, {
       title,
       authors,
-      ...otherInfo,
     });
 
     // --- STEP 6: Enrichment & ID Linking ---

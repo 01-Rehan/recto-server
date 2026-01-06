@@ -16,30 +16,23 @@ import {
   getAllReviewsForBook,
 } from "../controller/reviews.controller";
 import { VerifyJWT } from "../middlewares/auth.middleware";
+import { apiLimiter } from "../middlewares/rateLimiter.middleware";
 
 const router = Router();
-
-// Ex for different roles like admin \ librarian \ moderators
-//   router.route("/stats").get(
-//     VerifyJWT,
-//     VerifyRole(["admin"]),
-//     getSystemStats
-// );
-
-// // Example: Allow multiple roles
-// router.route("/manage-content").patch(
-//     VerifyJWT,
-//     VerifyRole(["admin", "moderator"]),
-//     manageContentController
-// );
 
 // for all users (without the JWT token)
 router
   .route("/getbook")
-  .post(validate(BookValidationSchema.createBook), getBookController);
+  .post(apiLimiter, validate(BookValidationSchema.createBook), getBookController);
 
 // Purchase links endpoint (public access)
-router.route("/purchase-links/:bookId").get(getPurchaseLinksController);
+router
+  .route("/purchase-links/:bookId")
+  .get(
+    apiLimiter,
+    validate(BookValidationSchema.getPurchaseLinks),
+    getPurchaseLinksController,
+  );
 
 // Protected Routes
 router.use(VerifyJWT);

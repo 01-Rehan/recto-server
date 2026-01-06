@@ -10,6 +10,7 @@ class ConnectionServices {
       followingId: userIdToFollow,
     });
   };
+
   unfollowUser = async (
     userIdToUnfollow: string,
     CurrentUser: string,
@@ -19,19 +20,29 @@ class ConnectionServices {
       followingId: userIdToUnfollow,
     });
   };
-  fetchFollowers = async (userId: string): Promise<IFollowerDocument[] | any> => {
-    return await FollowerModel.find({
-      followingId: userId,
-    })
-      .populate("followerId", "userName fullName avatarImage")
+
+  // Consolidated method for fetching followers/following
+  private fetchConnections = async (
+    userId: string,
+    type: 'followers' | 'following'
+  ): Promise<IFollowerDocument[] | any> => {
+    const query = type === 'followers' 
+      ? { followingId: userId }
+      : { followerId: userId };
+    
+    const populateField = type === 'followers' ? 'followerId' : 'followingId';
+    
+    return await FollowerModel.find(query)
+      .populate(populateField, "userName fullName avatarImage")
       .lean();
   };
+
+  fetchFollowers = async (userId: string): Promise<IFollowerDocument[] | any> => {
+    return this.fetchConnections(userId, 'followers');
+  };
+
   fetchFollowings = async (userId: string): Promise<IFollowerDocument[] | any> => {
-    return await FollowerModel.find({
-      followerId: userId,
-    })
-      .populate("followingId", "userName fullName avatarImage")
-      .lean();
+    return this.fetchConnections(userId, 'following');
   };
 }
 

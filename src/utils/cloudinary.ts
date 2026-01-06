@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import ApiError from "./ApiError";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -28,7 +29,7 @@ const uploadOnCloudinary = async (localFilePath: string) => {
     // We attempt to unlink, but we don't care if it fails (e.g., file doesn't exist).
     // The 'finally' block ensures this runs regardless of success or failure of the unlink.
     await fs.promises.unlink(localFilePath).catch(() => {}); // Attempt cleanup
-    return null;
+    throw new ApiError(500, "Failed to upload image to storage");
   }
 };
 

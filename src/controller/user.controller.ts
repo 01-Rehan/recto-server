@@ -6,6 +6,7 @@ import { CustomRequest } from "../types/customRequest";
 import { userServices } from "../services/user/user.service";
 import { jwtServices } from "../services/user/JWT.service";
 import { googleAuth } from "../services/user/googleAuth.service";
+import ApiError from "../utils/ApiError";
 
 const options = {
   httpOnly: true,
@@ -188,8 +189,8 @@ export const updateProfile = asyncHandler(
 );
 
 export const updateEmail = asyncHandler(
-  async (_req: Request, _res: Response) => {
-    // To be implemented
+  async (_req: CustomRequest, _res: Response) => {
+    throw new ApiError(501, "Email update is not yet implemented");
   },
 );
 

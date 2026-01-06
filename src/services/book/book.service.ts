@@ -1,5 +1,4 @@
 import { bookQueryService } from "./book.query.service";
-import ApiError from "../../utils/ApiError";
 import { UserBookModel } from "../../models/addedBook.model";
 
 /**
@@ -27,20 +26,13 @@ class BookServices {
   getBook = async (
     externalId: string,
     title?: string,
-    authors?: string[],
-    otherInfo?: Record<string, any>,
+    authors?: string[]
   ) => {
-    // Fast validation
-    if (!externalId) {
-      throw new ApiError(400, "externalId is required");
-    }
-
     // FAST PATH: Resolve book using optimized query service
     const book = await bookQueryService.resolveBook(
       externalId,
       title,
-      authors,
-      otherInfo,
+      authors
     );
 
     return book;

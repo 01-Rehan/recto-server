@@ -1,11 +1,15 @@
 import  express  from 'express';
 import cors from 'cors';
+import { globalLimiter } from './middlewares/rateLimiter.middleware';
 
 const app = express();
 
 app.use(cors({
     origin : process.env.CLIENT_URL
 }))
+
+// Apply global rate limiter to all endpoints
+app.use(globalLimiter);
 
 app.use(express.json({limit:'16kb'}));
 app.use(express.urlencoded({extended:true,limit:'16kb'}));

@@ -12,8 +12,6 @@ class UserValidation {
       }),
       query: z.object({}).optional(),
       params: z.object({}).optional(),
-      cookies: z.object({}).optional(),
-      headers: z.object({}).optional(),
     })
     .strict();
 
@@ -28,8 +26,6 @@ class UserValidation {
       }),
       query: z.object({}).optional(),
       params: z.object({}).optional(),
-      cookies: z.object({}).optional(),
-      headers: z.object({}).optional(),
     })
     .strict();
 
@@ -43,8 +39,6 @@ class UserValidation {
       }),
       query: z.object({}).optional(),
       params: z.object({}).optional(),
-      cookies: z.object({}).optional(),
-      headers: z.object({}).optional(),
     })
     .strict();
 
@@ -73,8 +67,6 @@ class UserValidation {
       }),
       query: z.object({}).optional(),
       params: z.object({}).optional(),
-      cookies: z.object({}).optional(),
-      headers: z.object({}).optional(),
     })
     .strict();
 
@@ -86,8 +78,6 @@ class UserValidation {
       }),
       query: z.object({}).optional(),
       params: z.object({}).optional(),
-      cookies: z.object({}).optional(),
-      headers: z.object({}).optional(),
     })
     .strict();
 
@@ -99,8 +89,6 @@ class UserValidation {
       }),
       query: z.object({}).optional(),
       params: z.object({}).optional(),
-      cookies: z.object({}).optional(),
-      headers: z.object({}).optional(),
     })
     .strict();
 
@@ -112,41 +100,48 @@ class UserValidation {
       }),
       query: z.object({}).optional(),
       params: z.object({}).optional(),
-      cookies: z.object({}).optional(),
-      headers: z.object({}).optional(),
     })
     .strict();
 
-  updateProfile = z.object({
-    body: z.object({
-      fullName: z.string().trim().min(1).optional(),
-      bio: z.string().max(300, "Bio cannot exceed 300 characters").optional(),
-      // Regex: Alphanumeric and underscores only, 3-30 chars
-      userName: z
-        .string()
-        .min(3)
-        .max(30)
-        .regex(
-          /^[a-zA-Z0-9_]+$/,
-          "Username can only contain letters, numbers, and underscores",
-        )
-        .optional(),
-    }),
-    query: z.object({}).optional(),
-    params: z.object({}).optional(),
-    cookies: z.object({}).optional(),
-    headers: z.object({}).optional(),
-  });
+  updateProfile = z
+    .object({
+      body: z
+        .object({
+          fullName: z.string().trim().min(1).optional(),
+          bio: z.string().max(300, "Bio cannot exceed 300 characters").optional(),
+          // Regex: Alphanumeric and underscores only, 3-30 chars
+          userName: z
+            .string()
+            .min(3)
+            .max(30)
+            .regex(
+              /^[a-zA-Z0-9_]+$/,
+              "Username can only contain letters, numbers, and underscores",
+            )
+            .optional(),
+        })
+        .refine(
+          (data) =>
+            data.fullName !== undefined ||
+            data.bio !== undefined ||
+            data.userName !== undefined,
+          {
+            message:
+              "At least one field (fullName, bio, or userName) must be provided for update",
+          },
+        ),
+      query: z.object({}).optional(),
+      params: z.object({}).optional(),
+    })
+    .strict();
 
   userNameAvailability = z
     .object({
       body: z.object({}).optional(),
       query: z.object({
-        username: z.string({ message: "Username is required" }),
+        userName: z.string({ message: "userName is required" }),
       }),
       params: z.object({}).optional(),
-      cookies: z.object({}).optional(),
-      headers: z.object({}).optional(),
     })
     .strict();
 }

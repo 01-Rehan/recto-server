@@ -16,7 +16,6 @@ interface CountryConfig {
   amazonDomain: string;
   amazonRegion: string;
   koboRegion: string;
-  appleBooksCountry: string;
 }
 
 const COUNTRY_CONFIGS: Record<CountryCode, CountryConfig> = {
@@ -24,43 +23,36 @@ const COUNTRY_CONFIGS: Record<CountryCode, CountryConfig> = {
     amazonDomain: "amazon.com",
     amazonRegion: "us",
     koboRegion: "us/en",
-    appleBooksCountry: "us",
   },
   UK: {
     amazonDomain: "amazon.co.uk",
     amazonRegion: "uk",
     koboRegion: "gb/en",
-    appleBooksCountry: "gb",
   },
   IN: {
     amazonDomain: "amazon.in",
     amazonRegion: "in",
     koboRegion: "in/en",
-    appleBooksCountry: "in",
   },
   CA: {
     amazonDomain: "amazon.ca",
     amazonRegion: "ca",
     koboRegion: "ca/en",
-    appleBooksCountry: "ca",
   },
   AU: {
     amazonDomain: "amazon.com.au",
     amazonRegion: "au",
     koboRegion: "au/en",
-    appleBooksCountry: "au",
   },
   DE: {
     amazonDomain: "amazon.de",
     amazonRegion: "de",
     koboRegion: "de/de",
-    appleBooksCountry: "de",
   },
   FR: {
     amazonDomain: "amazon.fr",
     amazonRegion: "fr",
     koboRegion: "fr/fr",
-    appleBooksCountry: "fr",
   },
 };
 

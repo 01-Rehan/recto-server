@@ -7,9 +7,13 @@ import app from './app';
 connectDB()
 .then(() => {
     app.listen(process.env.PORT || 3000, () => {
-        console.log("server running at port :",process.env.PORT || 3000);
+        if (process.env.NODE_ENV === "development") {
+            console.log("server running at port :",process.env.PORT || 3000);
+        }
     })
 })
 .catch((err) => {
-    console.log("error while starting server :",err);
+    if (process.env.NODE_ENV === "development") {
+        console.log("error while starting server :", err);
+    }
 })
