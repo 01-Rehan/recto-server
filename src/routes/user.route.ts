@@ -21,7 +21,10 @@ import { VerifyJWT } from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/multer.middleware";
 import validate from "../middlewares/validate.middleware";
 import userSchema from "../validation/user.schema";
-import { authLimiter, sensitiveOpLimiter } from "../middlewares/rateLimiter.middleware";
+import {
+  authLimiter,
+  sensitiveOpLimiter,
+} from "../middlewares/rateLimiter.middleware";
 
 const router = Router();
 
@@ -46,7 +49,11 @@ router.route("/google/callback").get(googleAuthCallback);
 // --- Password Reset Flow ---
 router
   .route("/password-otp")
-  .post(sensitiveOpLimiter, validate(userSchema.forgotPassword), forgotPassword);
+  .post(
+    sensitiveOpLimiter,
+    validate(userSchema.forgotPassword),
+    forgotPassword,
+  );
 
 router
   .route("/password-otp-verify")

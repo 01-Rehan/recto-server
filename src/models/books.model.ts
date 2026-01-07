@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import {IBook} from "../types/book";
+import { IBook } from "../types/book";
 
 const bookSchema = new mongoose.Schema<IBook>(
   {
@@ -20,7 +20,7 @@ const bookSchema = new mongoose.Schema<IBook>(
       required: true,
     },
     genres: {
-      type: [String]
+      type: [String],
     },
     releaseDate: {
       type: String,
@@ -59,7 +59,7 @@ const bookSchema = new mongoose.Schema<IBook>(
       default: [],
     },
     alternativeIds: {
-      type: [String], 
+      type: [String],
       default: [],
     },
   },

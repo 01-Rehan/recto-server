@@ -8,10 +8,10 @@ const validate =
     try {
       // Only pass fields that the schema expects (avoid unnecessary objects)
       const parseInput: Record<string, any> = {};
-      
+
       // Get schema shape to check what fields are defined
       const schemaShape = (schema as any)._shape || (schema as any).shape;
-      
+
       if (schemaShape?.body) parseInput.body = req.body || {};
       if (schemaShape?.query) parseInput.query = req.query || {};
       if (schemaShape?.params) parseInput.params = req.params || {};
@@ -23,21 +23,21 @@ const validate =
       req.body = result.body || req.body;
 
       if (result.params) {
-        Object.defineProperty(req, 'params', {
+        Object.defineProperty(req, "params", {
           value: result.params,
           configurable: true,
-          writable: true
+          writable: true,
         });
       }
 
       if (result.query) {
         // Clear and assign (for strictness)
-         for (const key in req.query) {
-             delete (req.query as any)[key];
-         }
-         Object.assign(req.query, result.query);
+        for (const key in req.query) {
+          delete (req.query as any)[key];
+        }
+        Object.assign(req.query, result.query);
       }
-      
+
       next();
     } catch (error: any) {
       if (error instanceof ZodError) {

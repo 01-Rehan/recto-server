@@ -1,4 +1,5 @@
 import mongoose, { Schema, Model } from "mongoose";
+import crypto from "crypto";
 import { IUser, IUserMethods } from "../types/user"; // Ensure this interface matches the schema
 import bcrypt from "bcrypt";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
@@ -13,8 +14,6 @@ const userSchema = new Schema<
   {
     userName: {
       type: String,
-      default: null,
-      sparse: true,
       unique: true, // Note: Custom error messages for 'unique' require a plugin or controller logic
     },
     fullName: {
@@ -38,17 +37,17 @@ const userSchema = new Schema<
     },
     bio: {
       type: String,
-      default: null
+      default: null,
     },
     avatarImage: {
       type: String,
-      default: null
+      default: null,
     },
     coverImage: {
       type: String,
-      default: null
+      default: null,
     },
-    
+
     // counters
     followersCount: { type: Number, default: 0 },
     followingCount: { type: Number, default: 0 },
@@ -76,16 +75,46 @@ const userSchema = new Schema<
 
 userSchema.pre("save", async function () {
   try {
+    // Auto-generate a unique username if missing
+    if (!this.userName || this.userName.trim() === "") {
+      const fullName: string = this.fullName || "user";
+      const baseRaw = fullName.toLowerCase().replace(/[^a-z0-9_.]/g, "");
+      const base = baseRaw.slice(0, 15) || "user";
+      
+      let generated = false;
+      for (let i = 0; i < 5; i++) {
+        const suffix = crypto.randomBytes(2).toString("hex");
+        const maxBaseLen = Math.max(1, 20 - 1 - suffix.length);
+        const candidate = `${base.slice(0, maxBaseLen)}_${suffix}`;
+        const exists = await (this.constructor as mongoose.Model<IUser>).exists({ 
+          userName: candidate 
+        });
+        if (!exists) {
+          this.userName = candidate;
+          generated = true;
+          break;
+        }
+      }
+      
+      // If still unset after attempts, set a fallback
+      if (!generated) {
+        this.userName = `user_${crypto.randomBytes(3).toString("hex")}`;
+      }
+    }
+    
+    // Hash password if modified
     if (!this.isModified("hashedPassword")) return;
-    this.hashedPassword = await bcrypt.hash(this.hashedPassword, 10);
+    if (this.hashedPassword) {
+      this.hashedPassword = await bcrypt.hash(this.hashedPassword, 10);
+    }
   } catch (err: any) {
-    // Type as any or Error
     throw err;
   }
 });
 
 userSchema.methods.comparePassword = async function (password: string) {
-  if(!password || password.trim().length === 0) throw new ApiError(400, "Password cannot be empty");
+  if (!password || password.trim().length === 0)
+    throw new ApiError(400, "Password cannot be empty");
   try {
     return await bcrypt.compare(password, this.hashedPassword);
   } catch (err) {

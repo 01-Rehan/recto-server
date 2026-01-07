@@ -1,46 +1,44 @@
 # Purchase Links & Affiliate Integration
 
 ## Overview
+
 The purchase links feature generates affiliate links for book purchases across 15+ major platforms. Users can click "Buy Book" to see all available purchase options organized by category.
 
 ## Supported Platforms
 
 ### **Affiliate Programs** (Generate Commission)
+
 1. **Amazon** - Largest selection, fast shipping
    - Setup: https://affiliate-program.amazon.com
    - Env: `AMAZON_AFFILIATE_ID`
-   
 2. **Audible** - Audiobooks
    - Uses Amazon Associates program
    - Env: `AMAZON_AFFILIATE_ID`
-   
 3. **Apple Books** - Ebooks
    - Setup: https://books.apple.com/us/about/affiliate
    - Env: `APPLE_BOOKS_AFFILIATE_ID`
-   
 4. **Kobo** - Ebooks & DRM-free
    - Setup: https://www.kobo.com/us/en/p/affiliates
    - Env: `KOBO_AFFILIATE_ID`
-   
 5. **Barnes & Noble** - Physical & Ebooks
    - Setup: https://www.barnesandnoble.com
    - Env: `BN_AFFILIATE_ID`
-   
 6. **Google Play Books** - Ebooks
    - Commission structure varies
    - Env: Not yet configured
-   
 7. **Bookshop.org** - Support independent bookstores
    - Setup: https://bookshop.org/pages/publishers
    - Env: `BOOKSHOP_AFFILIATE_ID`
 
 ### **Free/Non-Affiliate Platforms**
+
 - Open Library - Free borrowing
 - Project Gutenberg - Free public domain
 - Standard Ebooks - Free public domain (formatted)
 - Libby - Free through library system
 
 ### **Discount Platforms**
+
 - ThriftBooks - Used books
 - Better World Books - Used & new books
 - Scribd - Digital library subscription
@@ -49,11 +47,13 @@ The purchase links feature generates affiliate links for book purchases across 1
 ## API Usage
 
 ### Get Purchase Links for a Book
+
 ```
 GET /api/v1/book/purchase-links/:bookId
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -99,7 +99,7 @@ const handleBuyClick = async (bookId: string) => {
   try {
     const response = await fetch(`/api/v1/book/purchase-links/${bookId}`);
     const { data } = await response.json();
-    
+
     // Show modal with grouped links
     showPurchaseModal({
       affiliate: data.grouped.affiliate,
@@ -123,7 +123,7 @@ function renderPurchaseLinks(grouped) {
           </a>
         ))}
       </section>
-      
+
       <section>
         <h3>🆓 Free Options (Library, Public Domain)</h3>
         {Object.entries(grouped.free).map(([key, link]) => (
@@ -132,7 +132,7 @@ function renderPurchaseLinks(grouped) {
           </a>
         ))}
       </section>
-      
+
       <section>
         <h3>💰 Used & Discount Books</h3>
         {Object.entries(grouped.discount).map(([key, link]) => (
@@ -151,32 +151,38 @@ function renderPurchaseLinks(grouped) {
 ### 1. Get Affiliate IDs from Programs
 
 **Amazon Associates:**
+
 - Go to: https://affiliate-program.amazon.com
 - Sign up and create campaign
 - Get your associate tag (e.g., `yoursite-20`)
 - Minimum commission: 4-10% depending on category
 
 **Apple Books:**
+
 - Go to: https://books.apple.com/us/about/affiliate
 - Sign up for Apple Affiliate Program
 - Get your affiliate token
 
 **Kobo:**
+
 - Go to: https://www.kobo.com/us/en/p/affiliates
 - Register your website
 - Get your affiliate ID
 
 **Bookshop.org:**
+
 - Go to: https://bookshop.org/pages/publishers
 - Register and get affiliate link
 
 **Barnes & Noble:**
+
 - Contact B&N directly for partnership opportunities
 - Or use through other affiliate networks
 
 ### 2. Add to Environment Variables
 
 Update `.env` file:
+
 ```env
 AMAZON_AFFILIATE_ID=yoursite-20
 APPLE_BOOKS_AFFILIATE_ID=your-apple-token
@@ -199,11 +205,12 @@ curl "http://localhost:8080/api/v1/book/purchase-links/[bookId]"
 ✅ **Environment-based** - Easy configuration  
 ✅ **Non-blocking** - Lazy-loaded on demand  
 ✅ **Cacheable** - 1-hour cache header  
-✅ **Transparent** - Shows all options to users  
+✅ **Transparent** - Shows all options to users
 
 ## Revenue Potential
 
 **Estimated Commission Rates:**
+
 - **Amazon** - 4-5% for books
 - **Audible** - 5-10% for new members
 - **Apple Books** - Up to 15-20%
@@ -212,6 +219,7 @@ curl "http://localhost:8080/api/v1/book/purchase-links/[bookId]"
 - **Smashwords** - 50% for referrals
 
 **Example:** If 1,000 users/month purchase through your links:
+
 - Average book price: $15
 - Average conversion: 2-3%
 - 20-30 purchases/month
@@ -239,16 +247,19 @@ curl "http://localhost:8080/api/v1/book/purchase-links/[bookId]"
 ## Troubleshooting
 
 **Links not generating:**
+
 - Check affiliate IDs are set in `.env`
 - Verify book has `title` field
 - Check browser console for CORS issues
 
 **No commission tracking:**
+
 - Each platform has its own tracking
 - Log into affiliate dashboard to see stats
 - May take 24-48 hours to appear
 
 **Link errors:**
+
 - Test URL directly in browser
 - Ensure book title is URL-encoded properly
 - Check affiliate ID format is correct
@@ -271,4 +282,3 @@ src/
 - **Cache Duration**: 1 hour
 - **Database Query**: Single book lookup by ID
 - **Zero Blocking Operations**: Responds immediately
-

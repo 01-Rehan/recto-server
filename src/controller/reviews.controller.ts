@@ -8,7 +8,7 @@ import bookReviewSchema from "../validation/bookReview.schema";
 export const getAllReviewsForBook = asyncHandler(
   async (
     req: ValidatedRequest<typeof bookReviewSchema.getAllReviewsForBook>,
-    res: Response
+    res: Response,
   ) => {
     const userId = req.user?._id || null;
     const { bookId } = req.params;
@@ -32,7 +32,7 @@ export const getAllReviewsForBook = asyncHandler(
 export const addReview = asyncHandler(
   async (
     req: ValidatedRequest<typeof bookReviewSchema.addReview>,
-    res: Response
+    res: Response,
   ) => {
     const userId = req.user!._id;
     const { bookId, content, rating } = req.body;
@@ -53,7 +53,7 @@ export const addReview = asyncHandler(
 export const removeReview = asyncHandler(
   async (
     req: ValidatedRequest<typeof bookReviewSchema.removeReview>,
-    res: Response
+    res: Response,
   ) => {
     const userId = req.user!._id;
     const { reviewId } = req.params;
@@ -74,7 +74,7 @@ export const removeReview = asyncHandler(
 export const updateReview = asyncHandler(
   async (
     req: ValidatedRequest<typeof bookReviewSchema.updateReview>,
-    res: Response
+    res: Response,
   ) => {
     const userId = req.user!._id;
     const { reviewId } = req.params;

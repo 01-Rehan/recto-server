@@ -108,7 +108,10 @@ class UserValidation {
       body: z
         .object({
           fullName: z.string().trim().min(1).optional(),
-          bio: z.string().max(300, "Bio cannot exceed 300 characters").optional(),
+          bio: z
+            .string()
+            .max(300, "Bio cannot exceed 300 characters")
+            .optional(),
           // Regex: Alphanumeric and underscores only, 3-30 chars
           userName: z
             .string()

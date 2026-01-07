@@ -1,27 +1,29 @@
-import { Types,Schema,model,HydratedDocument } from "mongoose";
+import { Types, Schema, model, HydratedDocument } from "mongoose";
 import { IUser } from "../types/user";
 
 interface IFollower {
-    followerId: Types.ObjectId | IUser;
-    followingId: Types.ObjectId | IUser;
+  followerId: Types.ObjectId | IUser;
+  followingId: Types.ObjectId | IUser;
 }
 
 export type IFollowerDocument = HydratedDocument<IFollower>;
 
-const FollowerSchema = new Schema<IFollower>({
+const FollowerSchema = new Schema<IFollower>(
+  {
     followerId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     followingId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-}, {
+  },
+  {
     timestamps: true,
-}
+  },
 );
 
 // 1. Prevent Duplicate Follows

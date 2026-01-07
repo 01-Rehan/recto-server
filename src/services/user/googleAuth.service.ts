@@ -1,4 +1,5 @@
 import axios from "axios";
+import crypto from "crypto";
 import ApiError from "../../utils/ApiError";
 import User from "../../models/user.model";
 import { jwtServices } from "./JWT.service";
@@ -7,17 +8,19 @@ class GoogleAuthentication {
     const GOOGLE_OAUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 
     // Define the parameters for the URL
+    const state = crypto.randomBytes(16).toString("hex");
     const params = new URLSearchParams({
       client_id: process.env.GOOGLE_CLIENT_ID!,
       redirect_uri: process.env.GOOGLE_CALLBACK_URL!,
-      response_type: "code", // Important: We want a CODE, not a token directly (security)
-      scope: "profile email", // We are asking for their name and email
-      access_type: "offline", // Gets us a refresh token (optional, but good practice)
-      prompt: "consent", // Forces the "Allow" screen to show every time
+      response_type: "code",
+      scope: "openid email profile",
+      access_type: "offline",
+      prompt: "consent",
+      state,
     });
 
-    // 3. Construct the full URL and redirect the user
-    return `${GOOGLE_OAUTH_URL}?${params.toString()}`;
+    // Construct the full URL and return with state (controller will set cookie)
+    return { url: `${GOOGLE_OAUTH_URL}?${params.toString()}`, state };
   };
 
   CallBack = async (code: string) => {
@@ -36,12 +39,16 @@ class GoogleAuthentication {
     // We send the code + our client secret. Google verifies it and gives us an Access Token.
     let googleTokens;
     try {
-      const tokenResponse = await axios.post(GOOGLE_TOKEN_URL, {
+      const body = new URLSearchParams({
         code,
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+        redirect_uri: process.env.GOOGLE_CALLBACK_URL!,
         grant_type: "authorization_code",
+      });
+      const tokenResponse = await axios.post(GOOGLE_TOKEN_URL, body.toString(), {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        timeout: 10000,
       });
       googleTokens = tokenResponse.data;
     } catch (error) {
@@ -58,6 +65,7 @@ class GoogleAuthentication {
         headers: {
           Authorization: `Bearer ${googleAccessToken}`,
         },
+        timeout: 10000,
       });
       googleUser = userProfileResponse.data;
     } catch (error) {
@@ -94,12 +102,13 @@ class GoogleAuthentication {
       } else {
         // STEP C: New User entirely. Create account.
 
-        const StockAvatarImg = googleUser.picture;
-        const avatarImage = StockAvatarImg.replace(/=s\d+(-c)?/g, "") + "=s400";
+        const StockAvatarImg = googleUser.picture || "";
+        const avatarImage = StockAvatarImg
+          ? StockAvatarImg.replace(/=s\d+(-c)?/g, "") + "=s900"
+          : undefined;
 
-        // Generate a random secure : process.env.NODE_ENC === "production", DB requirement is met
-        // (Use a library like crypto or uuid)
-        const dummyPassword = Math.random().toString(36).slice(-16);
+        // Generate a cryptographically strong random password (only if needed)
+        const dummyPassword = crypto.randomBytes(32).toString("hex");
 
         user = await User.create({
           email: googleUser.email,
@@ -119,9 +128,6 @@ class GoogleAuthentication {
 
     const { accessToken, refreshToken: newRefreshToken } =
       await jwtServices.generateAccessAndRefreshTokens(user._id.toString());
-
-    user.refreshToken = newRefreshToken;
-    await user.save({ validateBeforeSave: false });
 
     // ACTION 6: Set Cookies and Redirect
     // Instead of sending JSON, we usually set cookies and redirect the browser

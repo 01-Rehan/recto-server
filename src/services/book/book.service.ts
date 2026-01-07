@@ -3,37 +3,29 @@ import { UserBookModel } from "../../models/addedBook.model";
 
 /**
  * BookService - OPTIMIZED for fast responses
- * 
+ *
  * IMPROVEMENTS:
  * 1. Delegates to optimized QueryService
  * 2. Minimal validation overhead
  * 3. Lean queries throughout
- * 
+ *
  * TARGET: <100ms for cached, <300ms for new books
  */
 class BookServices {
   /**
    * Get Book (OPTIMIZED - Primary Entry Point)
-   * 
+   *
    * FLOW:
    * 1. Fast DB lookup (parallel when possible)
    * 2. Return immediately
-   * 
+   *
    * PERFORMANCE:
    * - Cache hit: <100ms
    * - Cache miss: <300ms
    */
-  getBook = async (
-    externalId: string,
-    title?: string,
-    authors?: string[]
-  ) => {
+  getBook = async (externalId: string, title?: string, authors?: string[]) => {
     // FAST PATH: Resolve book using optimized query service
-    const book = await bookQueryService.resolveBook(
-      externalId,
-      title,
-      authors
-    );
+    const book = await bookQueryService.resolveBook(externalId, title, authors);
 
     return book;
   };

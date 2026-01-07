@@ -1,7 +1,6 @@
 import z from "zod";
 
 class BookReviewValidation {
-
   addReview = z
     .object({
       body: z.object({
@@ -27,9 +26,13 @@ class BookReviewValidation {
           content: z.string().optional(),
           rating: z.number().min(1).max(5).optional(),
         })
-        .refine((data) => data.content !== undefined || data.rating !== undefined, {
-          message: "At least one field (content or rating) must be provided for update",
-        }),
+        .refine(
+          (data) => data.content !== undefined || data.rating !== undefined,
+          {
+            message:
+              "At least one field (content or rating) must be provided for update",
+          },
+        ),
       params: z.object({
         reviewId: z.string({ message: "reviewId is required" }),
       }),
@@ -47,7 +50,6 @@ class BookReviewValidation {
       }),
     })
     .strict();
-
 }
 
 export default new BookReviewValidation();

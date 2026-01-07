@@ -44,7 +44,9 @@ const deleteFromCloudinary = async (publicUrl: string) => {
     // 2. Extract the public_id from the URL.
     // Example: https://res.cloudinary.com/demo/image/upload/v1629280243/folder/my_image.jpg
     // The public_id is "folder/my_image"
-    const publicIdMatch = publicUrl.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[^.]+)?$/);
+    const publicIdMatch = publicUrl.match(
+      /\/upload\/(?:v\d+\/)?(.+?)(?:\.[^.]+)?$/,
+    );
 
     if (publicIdMatch && publicIdMatch[1]) {
       const publicId = publicIdMatch[1];
@@ -55,4 +57,4 @@ const deleteFromCloudinary = async (publicUrl: string) => {
   }
 };
 
-export { uploadOnCloudinary , deleteFromCloudinary };
+export { uploadOnCloudinary, deleteFromCloudinary };

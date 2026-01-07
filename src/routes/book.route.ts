@@ -23,7 +23,11 @@ const router = Router();
 // for all users (without the JWT token)
 router
   .route("/getbook")
-  .post(apiLimiter, validate(BookValidationSchema.createBook), getBookController);
+  .post(
+    apiLimiter,
+    validate(BookValidationSchema.createBook),
+    getBookController,
+  );
 
 // Purchase links endpoint (public access)
 router

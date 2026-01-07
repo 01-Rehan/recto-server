@@ -7,7 +7,9 @@ class BookValidationSchema {
         .object({
           externalId: z.string({ message: "externalId is required" }),
           title: z.string({ message: "Title is required" }),
-          authors: z.array(z.string()).min(1, "At least one author is required"),
+          authors: z
+            .array(z.string())
+            .min(1, "At least one author is required"),
         })
         .strict(),
     })

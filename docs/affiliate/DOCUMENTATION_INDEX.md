@@ -3,6 +3,7 @@
 ## 📖 Quick Navigation
 
 ### 🚀 Getting Started (Start Here!)
+
 - **[README_AFFILIATE_LINKS.md](README_AFFILIATE_LINKS.md)** ← START HERE
   - 5-minute quick start
   - Feature overview
@@ -10,6 +11,7 @@
   - Final checklist
 
 ### 💼 Implementation & Setup
+
 - **[IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md)**
   - What's been implemented
   - Architecture overview
@@ -30,6 +32,7 @@
   - Next steps
 
 ### 🔌 API Reference
+
 - **[API_RESPONSES.md](API_RESPONSES.md)**
   - Response examples (JSON)
   - Error responses
@@ -39,6 +42,7 @@
   - Performance notes
 
 ### 🎨 Frontend Implementation
+
 - **[UI_UX_GUIDE.md](UI_UX_GUIDE.md)**
   - User flow diagram
   - Component structure
@@ -50,6 +54,7 @@
   - Analytics integration
 
 ### 📂 Code Implementation
+
 - **[src/services/affiliate.service.ts](src/services/affiliate.service.ts)**
   - Affiliate service class
   - Link generation logic
@@ -88,40 +93,45 @@ recto/server/
 ## 🎯 Reading Guide by Role
 
 ### 👨‍💻 Backend Developer
+
 1. [README_AFFILIATE_LINKS.md](README_AFFILIATE_LINKS.md) - Overview
 2. [IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md) - What's implemented
 3. [API_RESPONSES.md](API_RESPONSES.md) - Test the endpoint
 4. [src/services/affiliate.service.ts](src/services/affiliate.service.ts) - Review code
 
 ### 🎨 Frontend Developer
+
 1. [README_AFFILIATE_LINKS.md](README_AFFILIATE_LINKS.md) - Overview
 2. [API_RESPONSES.md](API_RESPONSES.md) - Understand response format
 3. [UI_UX_GUIDE.md](UI_UX_GUIDE.md) - Copy component code
 4. Implement React component from examples
 
 ### 🚀 DevOps / DevSecOps
+
 1. [AFFILIATE_SETUP.md](AFFILIATE_SETUP.md) - Environment config
 2. [PURCHASE_LINKS.md](PURCHASE_LINKS.md) - Affiliate program requirements
 3. Check `.env` for configuration
 
 ### 📊 Product Manager
+
 1. [README_AFFILIATE_LINKS.md](README_AFFILIATE_LINKS.md) - Revenue potential
 2. [PURCHASE_LINKS.md](PURCHASE_LINKS.md) - Platform details
 3. [IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md) - Next steps
 
 ### 💰 Business / Marketing
+
 1. [PURCHASE_LINKS.md](PURCHASE_LINKS.md) - Revenue model
 2. [README_AFFILIATE_LINKS.md](README_AFFILIATE_LINKS.md) - Setup guide
 
 ## 🔗 Affiliate Programs
 
-| Program | Link | Commission | Setup Time |
-|---------|------|-----------|-----------|
-| Amazon | https://affiliate-program.amazon.com | 4-5% | 30 min |
-| Apple Books | https://books.apple.com/us/about/affiliate | 15-20% | 20 min |
-| Kobo | https://www.kobo.com/us/en/p/affiliates | 20% | 20 min |
-| Bookshop.org | https://bookshop.org/pages/publishers | 10% | 15 min |
-| Audible | (Amazon program) | 5-10% | Via Amazon |
+| Program      | Link                                       | Commission | Setup Time |
+| ------------ | ------------------------------------------ | ---------- | ---------- |
+| Amazon       | https://affiliate-program.amazon.com       | 4-5%       | 30 min     |
+| Apple Books  | https://books.apple.com/us/about/affiliate | 15-20%     | 20 min     |
+| Kobo         | https://www.kobo.com/us/en/p/affiliates    | 20%        | 20 min     |
+| Bookshop.org | https://bookshop.org/pages/publishers      | 10%        | 15 min     |
+| Audible      | (Amazon program)                           | 5-10%      | Via Amazon |
 
 ## 📊 Stats & Metrics
 
@@ -146,7 +156,7 @@ recto/server/
 ✅ Cacheable (1 hour)  
 ✅ Analytics ready  
 ✅ Production ready  
-✅ No breaking changes  
+✅ No breaking changes
 
 ## 🚀 Quick Start
 
@@ -199,20 +209,24 @@ curl -s http://localhost:8080/api/v1/book/purchase-links/[bookId] | jq '.data.al
 ✅ "Buy Book" button visible on book pages  
 ✅ Links work when clicked  
 ✅ Analytics track click events  
-✅ Commission earnings appear in dashboards  
+✅ Commission earnings appear in dashboards
 
 ## 🤝 Support
 
 ### Setup Issues
+
 → [PURCHASE_LINKS.md Troubleshooting](PURCHASE_LINKS.md#troubleshooting)
 
 ### Integration Questions
+
 → [UI_UX_GUIDE.md Implementation](UI_UX_GUIDE.md)
 
 ### API Questions
+
 → [API_RESPONSES.md Examples](API_RESPONSES.md)
 
 ### Performance Concerns
+
 → [IMPLEMENTATION_COMPLETE.md Performance](IMPLEMENTATION_COMPLETE.md#performance-metrics)
 
 ## 📈 Next Steps
@@ -240,4 +254,3 @@ All answers are in the documentation files above. Use the reading guide based on
 ---
 
 **Start with [README_AFFILIATE_LINKS.md](README_AFFILIATE_LINKS.md) →**
-

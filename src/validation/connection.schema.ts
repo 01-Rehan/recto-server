@@ -31,13 +31,9 @@ class ConnectionValidation {
     })
     .strict();
 
-  myFollowers = z
-    .object({})
-    .strict();
+  myFollowers = z.object({}).strict();
 
-  myFollowing = z
-    .object({})
-    .strict();
+  myFollowing = z.object({}).strict();
 }
 
 export default new ConnectionValidation();

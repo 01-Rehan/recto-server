@@ -9,11 +9,10 @@ import { affiliateService } from "../services/book/affiliate.service";
 import Book from "../models/books.model";
 import BookValidationSchema from "../validation/book.schema";
 
-
 export const getBookController = asyncHandler(
   async (
     req: ValidatedRequest<typeof BookValidationSchema.createBook>,
-    res: Response
+    res: Response,
   ) => {
     const { externalId, title, authors } = req.body;
 
@@ -28,7 +27,7 @@ export const getBookController = asyncHandler(
 export const tbrBookController = asyncHandler(
   async (
     req: ValidatedRequest<typeof BookValidationSchema.tbrBook> & CustomRequest,
-    res: Response
+    res: Response,
   ) => {
     const userId = req.user!._id;
     const { bookId, status, startedAt, finishedAt } = req.body;
@@ -49,8 +48,9 @@ export const tbrBookController = asyncHandler(
 
 export const removeTbrBookController = asyncHandler(
   async (
-    req: ValidatedRequest<typeof BookValidationSchema.tbrRemoveBook> & CustomRequest,
-    res: Response
+    req: ValidatedRequest<typeof BookValidationSchema.tbrRemoveBook> &
+      CustomRequest,
+    res: Response,
   ) => {
     const userId = req.user!._id;
     const { tbrId } = req.params;
@@ -67,8 +67,9 @@ export const removeTbrBookController = asyncHandler(
 
 export const fetchBooksBasedOnStatus = asyncHandler(
   async (
-    req: ValidatedRequest<typeof BookValidationSchema.fetchBooksBasedOnStatus> & CustomRequest,
-    res: Response
+    req: ValidatedRequest<typeof BookValidationSchema.fetchBooksBasedOnStatus> &
+      CustomRequest,
+    res: Response,
   ) => {
     const userId = req.user!._id;
     const { status } = req.query;
@@ -87,7 +88,7 @@ export const fetchBooksBasedOnStatus = asyncHandler(
 export const getPurchaseLinksController = asyncHandler(
   async (
     req: ValidatedRequest<typeof BookValidationSchema.getPurchaseLinks>,
-    res: Response
+    res: Response,
   ) => {
     const { bookId } = req.params;
 
@@ -99,7 +100,7 @@ export const getPurchaseLinksController = asyncHandler(
 
     // // Generate purchase links for all platforms
     // const purchaseLinks = affiliateService.generatePurchaseLinks(book);
-    
+
     // Optionally group by category
     const grouped = affiliateService.groupPurchaseLinksByCategory(book);
 
@@ -115,4 +116,3 @@ export const getPurchaseLinksController = asyncHandler(
       );
   },
 );
-

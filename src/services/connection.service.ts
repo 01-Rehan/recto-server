@@ -24,25 +24,28 @@ class ConnectionServices {
   // Consolidated method for fetching followers/following
   private fetchConnections = async (
     userId: string,
-    type: 'followers' | 'following'
+    type: "followers" | "following",
   ): Promise<IFollowerDocument[] | any> => {
-    const query = type === 'followers' 
-      ? { followingId: userId }
-      : { followerId: userId };
-    
-    const populateField = type === 'followers' ? 'followerId' : 'followingId';
-    
+    const query =
+      type === "followers" ? { followingId: userId } : { followerId: userId };
+
+    const populateField = type === "followers" ? "followerId" : "followingId";
+
     return await FollowerModel.find(query)
       .populate(populateField, "userName fullName avatarImage")
       .lean();
   };
 
-  fetchFollowers = async (userId: string): Promise<IFollowerDocument[] | any> => {
-    return this.fetchConnections(userId, 'followers');
+  fetchFollowers = async (
+    userId: string,
+  ): Promise<IFollowerDocument[] | any> => {
+    return this.fetchConnections(userId, "followers");
   };
 
-  fetchFollowings = async (userId: string): Promise<IFollowerDocument[] | any> => {
-    return this.fetchConnections(userId, 'following');
+  fetchFollowings = async (
+    userId: string,
+  ): Promise<IFollowerDocument[] | any> => {
+    return this.fetchConnections(userId, "following");
   };
 }
 

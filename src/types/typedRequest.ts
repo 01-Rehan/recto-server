@@ -8,7 +8,7 @@ import { z } from "zod";
 export interface TypedRequest<
   TBody = any,
   TParams = any,
-  TQuery = any
+  TQuery = any,
 > extends Request<TParams, any, TBody, TQuery> {
   user?: {
     _id: string;
