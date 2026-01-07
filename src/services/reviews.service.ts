@@ -7,7 +7,7 @@ class ReviewServices {
   createReview = async (
     userId: string,
     bookId: string,
-    content: string,
+    content: string | undefined,
     rating: number,
   ) => {
     const session = await mongoose.startSession();
@@ -98,8 +98,8 @@ class ReviewServices {
   updateReview = async (
     userId: string,
     reviewId: string,
-    content: string,
-    rating: number,
+    content?: string,
+    rating?: number,
   ) => {
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -120,7 +120,7 @@ class ReviewServices {
       const isRatingChanged = rating !== undefined && rating !== oldRating;
 
       // 3. Update the Review Document
-      if (content) review.content = content;
+      if (content !== undefined) review.content = content;
       if (rating !== undefined) review.rating = rating;
 
       await review.save({ session });

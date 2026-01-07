@@ -6,32 +6,38 @@ const validate =
   (schema: ZodObject<any, any>) =>
   (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = schema.parse({
-        body: req.body || {},
-        query: req.query || {},
-        params: req.params || {},
-        cookies: req.cookies || {},
-        headers: req.headers || {},
-      });
+      // Only pass fields that the schema expects (avoid unnecessary objects)
+      const parseInput: Record<string, any> = {};
 
-      req.body = result.body;
+      // Get schema shape to check what fields are defined
+      const schemaShape = (schema as any)._shape || (schema as any).shape;
+
+      if (schemaShape?.body) parseInput.body = req.body || {};
+      if (schemaShape?.query) parseInput.query = req.query || {};
+      if (schemaShape?.params) parseInput.params = req.params || {};
+      if (schemaShape?.cookies) parseInput.cookies = req.cookies || {};
+      if (schemaShape?.headers) parseInput.headers = req.headers || {};
+
+      const result = schema.parse(parseInput);
+
+      req.body = result.body || req.body;
 
       if (result.params) {
-        Object.defineProperty(req, 'params', {
+        Object.defineProperty(req, "params", {
           value: result.params,
           configurable: true,
-          writable: true
+          writable: true,
         });
       }
 
       if (result.query) {
-        // Option B: clear and assign (for strictness)
-         for (const key in req.query) {
-             delete (req.query as any)[key];
-         }
-         Object.assign(req.query, result.query);
+        // Clear and assign (for strictness)
+        for (const key in req.query) {
+          delete (req.query as any)[key];
+        }
+        Object.assign(req.query, result.query);
       }
-      
+
       next();
     } catch (error: any) {
       if (error instanceof ZodError) {

@@ -28,7 +28,7 @@ const userBookSchema = new Schema<IUserBook>(
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt
-  }
+  },
 );
 
 // --- INDEXES ---
@@ -39,7 +39,7 @@ const userBookSchema = new Schema<IUserBook>(
 userBookSchema.index({ userId: 1, bookId: 1 }, { unique: true });
 
 // 2. Performance Index
-// We don't strictly need a separate index for { userId: 1 } because the compound index 
+// We don't strictly need a separate index for { userId: 1 } because the compound index
 // above covers it (since userId is the first field).
 // However, we DO need one for bookId if you want to find "Who else is reading this book?"
 // userBookSchema.index({ bookId: 1 });

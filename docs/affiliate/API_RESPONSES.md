@@ -1,6 +1,7 @@
 # Purchase Links API - Response Examples
 
 ## Endpoint
+
 ```
 GET /api/v1/book/purchase-links/:bookId
 ```
@@ -8,6 +9,7 @@ GET /api/v1/book/purchase-links/:bookId
 ## Response Format
 
 ### Success Response (200 OK)
+
 ```json
 {
   "success": true,
@@ -211,6 +213,7 @@ GET /api/v1/book/purchase-links/:bookId
 ## Error Responses
 
 ### Book Not Found (404)
+
 ```json
 {
   "success": false,
@@ -221,6 +224,7 @@ GET /api/v1/book/purchase-links/:bookId
 ```
 
 ### Invalid Book ID (400)
+
 ```json
 {
   "success": false,
@@ -231,6 +235,7 @@ GET /api/v1/book/purchase-links/:bookId
 ```
 
 ## Response Headers
+
 ```
 Cache-Control: public, max-age=3600
 Content-Type: application/json
@@ -239,27 +244,29 @@ Content-Type: application/json
 ## Usage Examples
 
 ### JavaScript/Fetch
+
 ```javascript
 async function getPurchaseLinks(bookId) {
   const response = await fetch(`/api/v1/book/purchase-links/${bookId}`);
   const { data } = await response.json();
-  
+
   return {
     all: data.all,
-    byCategory: data.grouped
+    byCategory: data.grouped,
   };
 }
 
 // Use in component
-const links = await getPurchaseLinks('507f1f77bcf86cd799439011');
+const links = await getPurchaseLinks("507f1f77bcf86cd799439011");
 
 // Display affiliate links
-links.byCategory.affiliate.forEach(link => {
+links.byCategory.affiliate.forEach((link) => {
   console.log(`${link.icon} ${link.name}: ${link.url}`);
 });
 ```
 
 ### React Example
+
 ```jsx
 function PurchaseLinksModal({ bookId }) {
   const [links, setLinks] = useState(null);
@@ -267,8 +274,8 @@ function PurchaseLinksModal({ bookId }) {
 
   useEffect(() => {
     fetch(`/api/v1/book/purchase-links/${bookId}`)
-      .then(res => res.json())
-      .then(json => {
+      .then((res) => res.json())
+      .then((json) => {
         setLinks(json.data.grouped);
         setLoading(false);
       });
@@ -310,6 +317,7 @@ function PurchaseLinksModal({ bookId }) {
 ```
 
 ### cURL
+
 ```bash
 # Get purchase links for a book
 curl -X GET "http://localhost:8080/api/v1/book/purchase-links/507f1f77bcf86cd799439011" \
@@ -320,6 +328,7 @@ curl -s "http://localhost:8080/api/v1/book/purchase-links/507f1f77bcf86cd7994390
 ```
 
 ### Postman Collection
+
 ```json
 {
   "info": {
@@ -354,22 +363,25 @@ curl -s "http://localhost:8080/api/v1/book/purchase-links/507f1f77bcf86cd7994390
 ## Link Format Examples
 
 ### Amazon
+
 ```
 https://www.amazon.com/s?k=BOOK_TITLE&tag=AFFILIATE_ID
 ```
 
 ### Apple Books
+
 ```
 https://books.apple.com/search?term=BOOK_TITLE&at=AFFILIATE_ID
 ```
 
 ### Kobo
+
 ```
 https://www.kobo.com/us/en/search?query=BOOK_TITLE&affid=AFFILIATE_ID
 ```
 
 ### Bookshop.org
+
 ```
 https://bookshop.org/search?q=BOOK_TITLE&aff=AFFILIATE_ID
 ```
-

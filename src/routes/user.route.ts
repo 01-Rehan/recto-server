@@ -21,17 +21,21 @@ import { VerifyJWT } from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/multer.middleware";
 import validate from "../middlewares/validate.middleware";
 import userSchema from "../validation/user.schema";
+import {
+  authLimiter,
+  sensitiveOpLimiter,
+} from "../middlewares/rateLimiter.middleware";
 
 const router = Router();
 
 // --- Auth Routes ---
-router.route("/signup").post(validate(userSchema.signUp), signup);
+router.route("/signup").post(authLimiter, validate(userSchema.signUp), signup);
 
 router
   .route("/signup-verify")
-  .post(validate(userSchema.verifyOTP), VerifyOTPSaveUser);
+  .post(authLimiter, validate(userSchema.verifyOTP), VerifyOTPSaveUser);
 
-router.route("/signin").post(validate(userSchema.signIn), signin);
+router.route("/signin").post(authLimiter, validate(userSchema.signIn), signin);
 
 router
   .route("/refresh-accesstoken")
@@ -45,18 +49,23 @@ router.route("/google/callback").get(googleAuthCallback);
 // --- Password Reset Flow ---
 router
   .route("/password-otp")
-  .post(validate(userSchema.forgotPassword), forgotPassword);
+  .post(
+    sensitiveOpLimiter,
+    validate(userSchema.forgotPassword),
+    forgotPassword,
+  );
 
 router
   .route("/password-otp-verify")
   .post(
+    sensitiveOpLimiter,
     validate(userSchema.verifyOTPforPasswordChange),
     verifyOTPforPasswordChange,
   );
 
 router
   .route("/new-password")
-  .post(validate(userSchema.newPassword), newPassword);
+  .post(sensitiveOpLimiter, validate(userSchema.newPassword), newPassword);
 
 // --- Protected Routes ---
 

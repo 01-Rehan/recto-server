@@ -5,7 +5,7 @@ import { Document } from "mongoose";
 
 export type ReadingStatus = "reading" | "finished" | "dropped" | "wishlist";
 
-export interface IUserBook extends Document{
+export interface IUserBook extends Document {
   _id: Types.ObjectId;
   userId: Types.ObjectId | IUser; // Can be ID or populated User
   bookId: Types.ObjectId | IBook; // Can be ID or populated Book

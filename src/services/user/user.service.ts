@@ -164,7 +164,7 @@ class UserServices {
     const response = await user.save();
 
     return response;
-  }
+  };
 
   forgotPassword = async (email: string) => {
     const user = await User.findOne({ email });

@@ -1,6 +1,5 @@
 import { Document } from "mongoose";
 import { ROLES as UserRoles } from "../constant";
- 
 
 export interface IUser extends Document {
   userName: string;
@@ -15,11 +14,10 @@ export interface IUser extends Document {
   followingCount: number;
   postsCount: number;
   refreshToken: string;
-  isVerified: boolean; 
+  isVerified: boolean;
   role: (typeof UserRoles)[number];
   createdAt: Date;
   updatedAt: Date;
-
 }
 
 export interface IUserMethods {

@@ -1,23 +1,25 @@
 import z from "zod";
 
-class SearchValidation{
+class SearchValidation {
+  searchUsers = z
+    .object({
+      query: z.object({
+        userName: z
+          .string({ message: "userName is required" })
+          .min(1, "userName cannot be empty"),
+      }),
+    })
+    .strict();
 
-  searchUsers = z.object({
-    body: z.object({}).optional(),
-    query: z.object({
-      userName: z.string({ message: "userName is required" }).min(1, "userName cannot be empty"),
-    }),
-    params: z.object({}).optional(),
-  }).strict();
-
-  getUser = z.object({
-    body: z.object({}).optional(),
-    query: z.object({
-      userName: z.string({ message: "userName is required" }).min(1, "userName cannot be empty"),
-    }),
-    params: z.object({}).optional(),
-  }).strict();
-
+  getUser = z
+    .object({
+      query: z.object({
+        userName: z
+          .string({ message: "userName is required" })
+          .min(1, "userName cannot be empty"),
+      }),
+    })
+    .strict();
 }
 
 export default new SearchValidation();

@@ -3,9 +3,11 @@
 ## ✅ What's Been Completed
 
 ### 1. **Affiliate Service** (`src/services/affiliate.service.ts`)
+
 Complete service for generating purchase links across 15+ platforms:
 
 **Features:**
+
 - Dynamic URL generation using book title and ISBN-13
 - Support for 7 affiliate programs with commission tracking
 - 4 free/public domain sources
@@ -14,6 +16,7 @@ Complete service for generating purchase links across 15+ platforms:
 - Environment variable configuration for affiliate IDs
 
 **Supported Programs:**
+
 1. Amazon Associates (4-5% commission)
 2. Audible (5-10% commission)
 3. Apple Books (15-20% commission)
@@ -30,34 +33,40 @@ Complete service for generating purchase links across 15+ platforms:
 14. Scribd (subscription)
 15. Smashwords (indie)
 
-### 2. **API Endpoint** 
+### 2. **API Endpoint**
+
 ```
 GET /api/v1/book/purchase-links/:bookId
 ```
 
 **Response Includes:**
+
 - `all` - Flat list of all 15 platforms
 - `grouped.affiliate` - Only paid affiliate programs
 - `grouped.free` - Free/library sources
 - `grouped.discount` - Used/discount sellers
 
 **Performance:**
+
 - Response time: <50ms
 - No external API calls
 - Single indexed DB query
 - 1-hour cache headers
 
 ### 3. **Controller** (`src/controller/book.controller.ts`)
+
 - `getPurchaseLinksController` - Handles the endpoint
 - Fast validation and error handling
 - Proper cache headers for client-side caching
 
 ### 4. **Routes** (`src/routes/book.route.ts`)
+
 - Public endpoint (no authentication required)
 - Accessible to all users
 - Lazy-loaded on demand (not blocking book fetch)
 
 ### 5. **Environment Configuration** (`.env`)
+
 ```env
 AMAZON_AFFILIATE_ID=yoursite-20
 APPLE_BOOKS_AFFILIATE_ID=your-apple-token
@@ -67,6 +76,7 @@ BN_AFFILIATE_ID=your-bn-id
 ```
 
 ### 6. **Documentation**
+
 - `PURCHASE_LINKS.md` - Complete setup and usage guide
 - `AFFILIATE_SETUP.md` - Quick reference and implementation summary
 - `API_RESPONSES.md` - Response examples and code snippets
@@ -74,12 +84,14 @@ BN_AFFILIATE_ID=your-bn-id
 ## 🚀 Quick Start
 
 ### Step 1: Register for Affiliate Programs
+
 1. **Amazon Associates** → https://affiliate-program.amazon.com
 2. **Apple Books** → https://books.apple.com/us/about/affiliate
 3. **Kobo** → https://www.kobo.com/us/en/p/affiliates
 4. **Bookshop.org** → https://bookshop.org/pages/publishers
 
 ### Step 2: Add to Environment
+
 ```bash
 echo "AMAZON_AFFILIATE_ID=yoursite-20" >> .env
 echo "APPLE_BOOKS_AFFILIATE_ID=your-token" >> .env
@@ -88,11 +100,13 @@ echo "BOOKSHOP_AFFILIATE_ID=your-id" >> .env
 ```
 
 ### Step 3: Test
+
 ```bash
 curl http://localhost:8080/api/v1/book/purchase-links/[bookId]
 ```
 
 ### Step 4: Integrate in Frontend
+
 ```javascript
 // When user clicks "Buy Book"
 const response = await fetch(`/api/v1/book/purchase-links/${bookId}`);
@@ -105,6 +119,7 @@ showPurchaseModal(data.grouped);
 ## 💰 Revenue Potential
 
 **Monthly Revenue Estimation:**
+
 - 1,000 monthly active users
 - 2-3% click-to-purchase conversion
 - Average book price: $15
@@ -112,19 +127,20 @@ showPurchaseModal(data.grouped);
 - **Monthly revenue: $20-45**
 
 **At scale (10,000 users):**
+
 - **Monthly revenue: $200-450**
 
 ## 📊 Platform Commission Breakdown
 
-| Platform | Commission | Best For |
-|----------|-----------|----------|
-| Amazon | 4-5% | Widest selection |
-| Apple Books | 15-20% | Ebook readers |
-| Kobo | 20% | DRM-free advocates |
-| Audible | 5-10% | Audiobook listeners |
-| Bookshop.org | 10% | Supporting indies |
-| Barnes & Noble | Variable | Niche market |
-| Others | 0% | Filler options |
+| Platform       | Commission | Best For            |
+| -------------- | ---------- | ------------------- |
+| Amazon         | 4-5%       | Widest selection    |
+| Apple Books    | 15-20%     | Ebook readers       |
+| Kobo           | 20%        | DRM-free advocates  |
+| Audible        | 5-10%      | Audiobook listeners |
+| Bookshop.org   | 10%        | Supporting indies   |
+| Barnes & Noble | Variable   | Niche market        |
+| Others         | 0%         | Filler options      |
 
 ## 🏗️ Architecture
 
@@ -159,17 +175,19 @@ User clicks "Buy Book" button
 ✅ **Non-blocking** - Separate endpoint  
 ✅ **Cacheable** - 1-hour TTL  
 ✅ **No Breaking Changes** - Fully backward compatible  
-✅ **Production Ready** - All tests pass  
+✅ **Production Ready** - All tests pass
 
 ## 📝 Files Created/Modified
 
 **Created:**
+
 - `src/services/affiliate.service.ts` (240 lines)
 - `PURCHASE_LINKS.md` (Complete guide)
 - `AFFILIATE_SETUP.md` (Quick reference)
 - `API_RESPONSES.md` (Examples)
 
 **Modified:**
+
 - `src/controller/book.controller.ts` (Added endpoint handler)
 - `src/routes/book.route.ts` (Added route)
 - `.env` (Added affiliate config)
@@ -177,11 +195,13 @@ User clicks "Buy Book" button
 ## 🔧 Technical Details
 
 **Database Query:**
+
 ```typescript
-const book = await Book.findById(bookId);  // Indexed, <5ms
+const book = await Book.findById(bookId); // Indexed, <5ms
 ```
 
 **URL Generation:**
+
 ```typescript
 const query = encodeURIComponent(book.title);
 // Amazon: https://amazon.com/s?k={query}&tag={affiliate_id}
@@ -189,6 +209,7 @@ const query = encodeURIComponent(book.title);
 ```
 
 **Response Cache:**
+
 ```
 Cache-Control: public, max-age=3600
 // 1 hour TTL for client-side caching
@@ -227,6 +248,7 @@ curl -s "http://localhost:8080/api/v1/book/purchase-links/507f1f77bcf86cd7994390
 ## 📞 Support
 
 For setup issues:
+
 - See `PURCHASE_LINKS.md` Troubleshooting section
 - Check `.env` has correct affiliate IDs
 - Verify affiliate program registration
@@ -243,4 +265,3 @@ For setup issues:
 - [x] Organized by category
 - [x] Complete documentation
 - [x] Ready for production
-

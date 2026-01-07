@@ -24,6 +24,7 @@ Affiliate tracking captures sale
 ## UI Component Structure
 
 ### Simple Version (All Links)
+
 ```html
 <div class="purchase-links">
   <a href="amazon_link">📕 Amazon</a>
@@ -36,10 +37,11 @@ Affiliate tracking captures sale
 ```
 
 ### Categorized Version (Recommended)
+
 ```html
 <div class="purchase-modal">
   <h2>Where to Buy</h2>
-  
+
   <section class="affiliate-section">
     <h3>💰 Support Us (We Earn Commission)</h3>
     <p className="subtitle">Help support our platform</p>
@@ -109,6 +111,7 @@ Affiliate tracking captures sale
 ## React Implementation
 
 ### Minimal Hook
+
 ```jsx
 function usePurchaseLinks(bookId) {
   const [links, setLinks] = useState(null);
@@ -117,12 +120,12 @@ function usePurchaseLinks(bookId) {
 
   useEffect(() => {
     fetch(`/api/v1/book/purchase-links/${bookId}`)
-      .then(r => r.json())
-      .then(res => {
+      .then((r) => r.json())
+      .then((res) => {
         setLinks(res.data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setError(err);
         setLoading(false);
       });
@@ -133,6 +136,7 @@ function usePurchaseLinks(bookId) {
 ```
 
 ### Modal Component
+
 ```jsx
 function PurchaseLinksModal({ bookId, isOpen, onClose }) {
   const { links, loading, error } = usePurchaseLinks(bookId);
@@ -172,8 +176,8 @@ function PurchaseLinksModal({ bookId, isOpen, onClose }) {
 
         <footer>
           <small>
-            We earn a small commission from affiliate links. 
-            This helps support Recto.
+            We earn a small commission from affiliate links. This helps support
+            Recto.
           </small>
         </footer>
       </div>
@@ -187,7 +191,7 @@ function LinksSection({ title, subtitle, links }) {
       <h3>{title}</h3>
       {subtitle && <p className="subtitle">{subtitle}</p>}
       <div className="links-grid">
-        {Object.values(links).map(link => (
+        {Object.values(links).map((link) => (
           <LinkButton key={link.platform} link={link} />
         ))}
       </div>
@@ -215,6 +219,7 @@ function LinkButton({ link }) {
 ```
 
 ### Trigger Button
+
 ```jsx
 function BookDetailsPage() {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -222,7 +227,7 @@ function BookDetailsPage() {
   return (
     <div className="book-details">
       {/* Book info */}
-      <button 
+      <button
         className="btn-buy-book"
         onClick={() => setShowPurchaseModal(true)}
       >
@@ -432,21 +437,21 @@ function BookDetailsPage() {
 ```jsx
 function trackLinkClick(platform) {
   // Google Analytics
-  gtag('event', 'purchase_link_click', {
+  gtag("event", "purchase_link_click", {
     platform: platform,
     book_id: bookId,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   // Custom tracking
-  fetch('/api/v1/analytics/link-click', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  fetch("/api/v1/analytics/link-click", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       platform,
       bookId,
-      timestamp: new Date()
-    })
+      timestamp: new Date(),
+    }),
   });
 }
 ```
@@ -454,11 +459,7 @@ function trackLinkClick(platform) {
 ## Accessibility
 
 ```jsx
-<section 
-  className="links-section"
-  role="region"
-  aria-label="Purchase options"
->
+<section className="links-section" role="region" aria-label="Purchase options">
   <a
     href={link.url}
     target="_blank"
@@ -469,4 +470,3 @@ function trackLinkClick(platform) {
   </a>
 </section>
 ```
-

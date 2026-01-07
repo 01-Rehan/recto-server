@@ -3,49 +3,49 @@ import { IBlog } from "../types/blog";
 
 const BlogSchema = new Schema<IBlog>(
   {
-    authorId: {
+    author_id: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      index: true, // Indexes this field to quickly find "All blogs by User X"
+      required: [true, "Author ID is required"],
+      index: true,
     },
     title: {
       type: String,
-      required: true,
+      required: [true, "Blog title is required"],
       trim: true,
-      maxlength: 150, // Reasonable limit for a title
+      maxlength: [200, "Title cannot exceed 200 characters"],
     },
-    subtitle: {
+    slug: {
+      type: String,
+      required: [true, "Slug is required"],
+      unique: true,
+      lowercase: true,
+      index: true,
+      trim: true,
+    },
+    cover_image: {
       type: String,
       trim: true,
-      maxlength: 250,
     },
     content: {
       type: String,
-      required: true,
-      maxlength : 10000,
+      required: [true, "Blog content is required"],
     },
-    coverImage: {
-      type: String, // Stores the URL (e.g., from Cloudinary/S3)
-    },
-    likesCount: {
-      type: Number,
-      default: 0,
-    },
-    commentsCount: {
-      type: Number,
-      default: 0,
+    is_published: {
+      type: Boolean,
+      default: true,
     },
   },
   {
-    timestamps: true, // Automatically manages createdAt (Timestamp) and updatedAt
-  }
+    timestamps: true,
+  },
 );
 
-// --- SEARCH INDEXES ---
+// Index for faster queries
+BlogSchema.index({ author_id: 1, is_published: 1 });
+BlogSchema.index({ is_published: 1, createdAt: -1 });
 
 // Allow searching by Title and Content
-// Usage: db.blogs.find({ $text: { $search: "search term" } })
 BlogSchema.index({ title: "text", content: "text" });
 
 export const BlogModel = model<IBlog>("Blog", BlogSchema);

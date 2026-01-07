@@ -8,17 +8,17 @@
     "lib": ["esnext"],
     "types": ["node"],
     "typeRoots": ["./node_modules/@types", "./src/types"],
-    
-    "moduleResolution": "node10", 
 
-    "sourceMap": false, 
+    "moduleResolution": "node10",
+
+    "sourceMap": false,
     "declaration": true,
     "declarationMap": true,
 
     "esModuleInterop": true,
     "skipLibCheck": true,
-    
-    "strict": true, 
+
+    "strict": true,
     "removeComments": true,
 
     "noUncheckedIndexedAccess": true,

@@ -1,16 +1,17 @@
 import { reviewServices } from "../services/reviews.service";
-import { CustomRequest } from "../types/customRequest";
-import ApiError from "../utils/ApiError";
+import { ValidatedRequest } from "../types/typedRequest";
 import ApiResponse from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Response } from "express";
+import bookReviewSchema from "../validation/bookReview.schema";
 
 export const getAllReviewsForBook = asyncHandler(
-  async (req: CustomRequest, res: Response) => {
+  async (
+    req: ValidatedRequest<typeof bookReviewSchema.getAllReviewsForBook>,
+    res: Response,
+  ) => {
     const userId = req.user?._id || null;
     const { bookId } = req.params;
-
-    if (!bookId) throw new ApiError(400, "bookId are required");
 
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -29,12 +30,12 @@ export const getAllReviewsForBook = asyncHandler(
 );
 
 export const addReview = asyncHandler(
-  async (req: CustomRequest, res: Response) => {
-    const userId = req.user?._id;
+  async (
+    req: ValidatedRequest<typeof bookReviewSchema.addReview>,
+    res: Response,
+  ) => {
+    const userId = req.user!._id;
     const { bookId, content, rating } = req.body;
-
-    if (!userId || !bookId || rating === undefined)
-      throw new ApiError(400, "userId, bookId, and rating are required");
 
     const Review = await reviewServices.createReview(
       userId,
@@ -50,13 +51,13 @@ export const addReview = asyncHandler(
 );
 
 export const removeReview = asyncHandler(
-  async (req: CustomRequest, res: Response) => {
-    const userId = req.user?._id;
+  async (
+    req: ValidatedRequest<typeof bookReviewSchema.removeReview>,
+    res: Response,
+  ) => {
+    const userId = req.user!._id;
     const { reviewId } = req.params;
-    const userRole = req.user?.role as string;
-
-    if (!userId || !reviewId)
-      throw new ApiError(400, "userId and reviewId are required");
+    const userRole = req.user!.role;
 
     const Review = await reviewServices.removeReview(
       userId,
@@ -71,13 +72,13 @@ export const removeReview = asyncHandler(
 );
 
 export const updateReview = asyncHandler(
-  async (req: CustomRequest, res: Response) => {
-    const userId = req.user?._id;
+  async (
+    req: ValidatedRequest<typeof bookReviewSchema.updateReview>,
+    res: Response,
+  ) => {
+    const userId = req.user!._id;
     const { reviewId } = req.params;
     const { content, rating } = req.body;
-
-    if (!userId || !reviewId)
-      throw new ApiError(400, "User ID and Review ID are required");
 
     const Review = await reviewServices.updateReview(
       userId,

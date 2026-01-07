@@ -6,6 +6,7 @@ import { CustomRequest } from "../types/customRequest";
 import { userServices } from "../services/user/user.service";
 import { jwtServices } from "../services/user/JWT.service";
 import { googleAuth } from "../services/user/googleAuth.service";
+import ApiError from "../utils/ApiError";
 
 const options = {
   httpOnly: true,
@@ -55,21 +56,30 @@ export const signin = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
-export const logout = asyncHandler(async (req: CustomRequest, res: Response) => {
-  const userId = req.user?._id as string;
+export const logout = asyncHandler(
+  async (req: CustomRequest, res: Response) => {
+    const userId = req.user?._id as string;
 
-  await userServices.logOut(userId);
+    await userServices.logOut(userId);
 
-  return res
-    .clearCookie("refreshToken", options)
-    .clearCookie("accessToken", options)
-    .status(200)
-    .json(new ApiResponse(200, {}, "User logged out successfully"));
-});
+    return res
+      .clearCookie("refreshToken", options)
+      .clearCookie("accessToken", options)
+      .status(200)
+      .json(new ApiResponse(200, {}, "User logged out successfully"));
+  },
+);
 
 export const googleAuthRedirect = asyncHandler(
   async (_req: Request, res: Response) => {
-    const url = await googleAuth.Redirect();
+    const { url, state } = await googleAuth.Redirect();
+    // store state in httpOnly cookie for CSRF protection
+    res.cookie("oauth_state", state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 10 * 60 * 1000, // 10 minutes
+    });
     return res.redirect(url);
   },
 );
@@ -78,16 +88,31 @@ export const googleAuthCallback = asyncHandler(
   async (req: Request, res: Response) => {
     // ACTION 1: Extract the "code" from the URL parameters
     // Google sends the user back to: /google/callback?code=abc12345...
-    const { code } = req.query as { code: string };
+    const { code, state } = req.query as { code: string; state?: string };
+
+    // Verify state to prevent CSRF
+    const stateCookie = req.cookies?.oauth_state as string | undefined;
+    if (!state || !stateCookie || state !== stateCookie) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, {}, "Invalid OAuth state"));
+    }
 
     const { refreshToken: newRefreshToken, accessToken } =
       await googleAuth.CallBack(code);
+
+    // clear state cookie after successful validation
+    res.clearCookie("oauth_state", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
 
     return res
       .status(200)
       .cookie("refreshToken", newRefreshToken, options)
       .cookie("accessToken", accessToken, options)
-      .redirect(process.env.CLIENT_URL_LOCAL || "http://localhost:5173/home");
+      .redirect(process.env.CLIENT_URL!);
     // .json({
     //   message: "Success",
     //   accessToken,
@@ -188,8 +213,8 @@ export const updateProfile = asyncHandler(
 );
 
 export const updateEmail = asyncHandler(
-  async (_req: Request, _res: Response) => {
-    // To be implemented
+  async (_req: CustomRequest, _res: Response) => {
+    throw new ApiError(501, "Email update is not yet implemented");
   },
 );
 

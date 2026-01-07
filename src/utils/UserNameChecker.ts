@@ -7,9 +7,7 @@ import ApiError from "./ApiError"; // Assuming ApiError is defined in your proje
  * @param existingUserName The current username of the user (to prevent updating to the same name).
  * @returns void - throws ApiError on failure.
  */
-export function validateUsername(
-  userName: string
-): void {
+export function validateUsername(userName: string): void {
   // Define all synchronous validation rules in a structured array
   const validationRules = [
     {

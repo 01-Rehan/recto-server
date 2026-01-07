@@ -2,16 +2,28 @@ import { Types } from "mongoose";
 import { IUser } from "./user";
 import { Document } from "mongoose";
 
-
 export interface IBlog extends Document {
   _id: Types.ObjectId;
-  authorId: Types.ObjectId | IUser; // Renamed from userId to authorId for clarity (optional)
+  author_id: Types.ObjectId | IUser;
   title: string;
-  subtitle?: string;
-  content: string;         // Can hold HTML or Markdown
-  coverImage?: string;     // URL to the image
-  likesCount: number;
-  commentsCount: number;
+  slug: string;
+  cover_image?: string;
+  content: string;
+  is_published: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface CreateBlogDto {
+  title: string;
+  content: string;
+  cover_image?: string;
+  is_published?: boolean;
+}
+
+export interface UpdateBlogDto {
+  title?: string;
+  content?: string;
+  cover_image?: string;
+  is_published?: boolean;
 }

@@ -1,34 +1,22 @@
 import { asyncHandler } from "../utils/asyncHandler";
-import { Request, Response } from "express";
+import { Response } from "express";
 import ApiError from "../utils/ApiError";
 import ApiResponse from "../utils/ApiResponse";
 import { CustomRequest } from "../types/customRequest";
+import { ValidatedRequest } from "../types/typedRequest";
 import { bookServices } from "../services/book/book.service";
 import { affiliateService } from "../services/book/affiliate.service";
 import Book from "../models/books.model";
+import BookValidationSchema from "../validation/book.schema";
 
-/**
- * Get Book Controller (OPTIMIZED)
- * 
- * IMPROVEMENTS:
- * 1. Fast validation
- * 2. Cache headers for client-side caching
- * 3. Minimal response transformation
- * 4. Early error returns
- * 
- * TARGET: <100ms for cached hits
- */
 export const getBookController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { externalId, title, authors, ...rest } = req.body;
+  async (
+    req: ValidatedRequest<typeof BookValidationSchema.createBook>,
+    res: Response,
+  ) => {
+    const { externalId, title, authors } = req.body;
 
-    // Fast validation
-    if (!externalId) {
-      throw new ApiError(400, "externalId is required");
-    }
-
-    // Fetch book (uses optimized query service)
-    const book = await bookServices.getBook(externalId, title, authors, rest);
+    const book = await bookServices.getBook(externalId, title, authors);
 
     return res
       .status(200)
@@ -37,8 +25,11 @@ export const getBookController = asyncHandler(
 );
 
 export const tbrBookController = asyncHandler(
-  async (req: CustomRequest, res: Response) => {
-    const userId = req.user?._id as string;
+  async (
+    req: ValidatedRequest<typeof BookValidationSchema.tbrBook> & CustomRequest,
+    res: Response,
+  ) => {
+    const userId = req.user!._id;
     const { bookId, status, startedAt, finishedAt } = req.body;
 
     const addedBook = await bookServices.tbrBook(
@@ -56,9 +47,13 @@ export const tbrBookController = asyncHandler(
 );
 
 export const removeTbrBookController = asyncHandler(
-  async (req: CustomRequest, res: Response) => {
-    const userId = req.user?._id as string;
-    const { tbrId } = req.params as { tbrId: string };
+  async (
+    req: ValidatedRequest<typeof BookValidationSchema.tbrRemoveBook> &
+      CustomRequest,
+    res: Response,
+  ) => {
+    const userId = req.user!._id;
+    const { tbrId } = req.params;
 
     const deletedData = await bookServices.tbrRemoveBook(userId, tbrId);
 
@@ -71,9 +66,13 @@ export const removeTbrBookController = asyncHandler(
 );
 
 export const fetchBooksBasedOnStatus = asyncHandler(
-  async (req: CustomRequest, res: Response) => {
-    const userId = req.user?._id as string;
-    const { status } = req.query as { status: string };
+  async (
+    req: ValidatedRequest<typeof BookValidationSchema.fetchBooksBasedOnStatus> &
+      CustomRequest,
+    res: Response,
+  ) => {
+    const userId = req.user!._id;
+    const { status } = req.query;
 
     const userBooks = await bookServices.fetchBooksBasedOnStatus(
       userId,
@@ -87,7 +86,10 @@ export const fetchBooksBasedOnStatus = asyncHandler(
 );
 
 export const getPurchaseLinksController = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (
+    req: ValidatedRequest<typeof BookValidationSchema.getPurchaseLinks>,
+    res: Response,
+  ) => {
     const { bookId } = req.params;
 
     // Fetch book from database
@@ -98,7 +100,7 @@ export const getPurchaseLinksController = asyncHandler(
 
     // // Generate purchase links for all platforms
     // const purchaseLinks = affiliateService.generatePurchaseLinks(book);
-    
+
     // Optionally group by category
     const grouped = affiliateService.groupPurchaseLinksByCategory(book);
 
@@ -114,4 +116,3 @@ export const getPurchaseLinksController = asyncHandler(
       );
   },
 );
-

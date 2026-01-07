@@ -1,60 +1,62 @@
 import { Schema, model, Model, Document } from "mongoose";
 import bcrypt from "bcrypt";
 
-export interface IOTP extends Document{
+export interface IOTP extends Document {
   email: string;
-  fullName : string,
-  hashedPassword : string,
+  fullName: string;
+  hashedPassword: string;
   hashedCode: string;
   expiresAt: Date;
 }
 
 export interface IOTPMethods {
- compareCode(otp: string): Promise<boolean>; 
+  compareCode(otp: string): Promise<boolean>;
 }
 
 const EXPIRATION_TIME = 5 * 60 * 1000;
 
-const OTPSchema = new Schema<IOTP , Model<IOTP, {}, IOTPMethods>,IOTPMethods>({
-  email: {
-    type: String,
-    required: true,
-    index: true,
+const OTPSchema = new Schema<IOTP, Model<IOTP, {}, IOTPMethods>, IOTPMethods>(
+  {
+    email: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    fullName: {
+      type: String,
+      required: false,
+    },
+    hashedPassword: {
+      type: String,
+      required: false,
+      select: false,
+    },
+    hashedCode: {
+      type: String,
+      required: true,
+      select: false,
+    },
+    expiresAt: {
+      type: Date,
+      required: true,
+      default: () => new Date(Date.now() + EXPIRATION_TIME),
+    },
   },
-  fullName: {
-    type: String,
-    required: false,
+  {
+    timestamps: true,
   },
-  hashedPassword: {
-    type: String,
-    required: false,
-    select : false
-  },
-  hashedCode: {
-    type: String,
-    required: true,
-    select : false
-  },
-  expiresAt: {
-    type: Date,
-    required: true,
-    default: () => new Date(Date.now() + EXPIRATION_TIME),
-  },
-},
-{
-  timestamps: true,
-});
+);
 
-OTPSchema.pre("save", async function (){
-    try {
-      if (this.isModified("hashedCode")) { 
+OTPSchema.pre("save", async function () {
+  try {
+    if (this.isModified("hashedCode")) {
       this.hashedCode = await bcrypt.hash(this.hashedCode, 10);
     }
-    } catch (error) {
-      console.log("Error while hashing the OTP code", error);
-      throw error;
-    }
-})
+  } catch (error) {
+    console.log("Error while hashing the OTP code", error);
+    throw error;
+  }
+});
 
 OTPSchema.pre("save", async function () {
   try {
@@ -74,7 +76,7 @@ OTPSchema.methods.compareCode = async function (otp: string) {
     console.log("Error comparing OTP", err);
     return false;
   }
-}
+};
 
 // Auto-delete expired OTPs (Mongo TTL index)
 OTPSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });

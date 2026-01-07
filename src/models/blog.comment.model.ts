@@ -34,7 +34,7 @@ const BlogCommentSchema = new Schema<IBlogComment>(
   },
   {
     timestamps: true, // Auto-manages createdAt and updatedAt
-  }
+  },
 );
 
 // --- PERFORMANCE INDEX ---
@@ -43,4 +43,7 @@ const BlogCommentSchema = new Schema<IBlogComment>(
 // Sorting by createdAt (-1) allows you to show the newest comments first.
 BlogCommentSchema.index({ blogId: 1, createdAt: -1 });
 
-export const BlogCommentModel = model<IBlogComment>("BlogComment", BlogCommentSchema);
+export const BlogCommentModel = model<IBlogComment>(
+  "BlogComment",
+  BlogCommentSchema,
+);

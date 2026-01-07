@@ -45,7 +45,7 @@ export const fetchFollowers = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.query as { userId: string };
 
-    const followers = await connectionServices.fetchFollowings(userId);
+    const followers = await connectionServices.fetchFollowers(userId);
     if (!followers) throw new ApiError(500, "Error while fetching followers");
 
     return res
@@ -67,8 +67,6 @@ export const fetchFollowing = asyncHandler(
     const { userId } = req.query as { userId: string };
 
     const following = await connectionServices.fetchFollowings(userId);
-    if (!following && following !== null)
-      throw new ApiError(500, "Error while fetching following");
 
     return res
       .status(200)
