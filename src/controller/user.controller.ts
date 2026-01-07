@@ -112,12 +112,12 @@ export const googleAuthCallback = asyncHandler(
       .status(200)
       .cookie("refreshToken", newRefreshToken, options)
       .cookie("accessToken", accessToken, options)
-      // .redirect(process.env.CLIENT_URL!);
-    .json({
-      message: "Success",
-      accessToken,
-      newRefreshToken,
-    })
+      .redirect(process.env.CLIENT_URL!);
+    // .json({
+    //   message: "Success",
+    //   accessToken,
+    //   newRefreshToken,
+    // })
   },
 );
 
