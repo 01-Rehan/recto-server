@@ -1,46 +1,10 @@
 import { openLibraryClient } from "../../clients/openLibrary.client";
-
-interface OpenLibrarySearchDoc {
-  key: string;
-  title: string;
-  author_name?: string[];
-  cover_i?: number;
-  first_publish_year?: number;
-  isbn?: string[];
-  number_of_pages_median?: number;
-  subject?: string[];
-}
-
-interface OpenLibrarySearchResponse {
-  numFound: number;
-  start: number;
-  docs: OpenLibrarySearchDoc[];
-}
-
-interface SearchResult {
-  openLibraryId: string;
-  title: string;
-  author: string[];
-  coverImage: string;
-  publishedYear?: number;
-  isbn?: string[];
-}
-
-interface SearchResponse {
-  books: SearchResult[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    limit: number;
-    totalResults: number;
-  };
-  metadata: {
-    query: string;
-    totalFound: number;
-    totalReturned: number;
-    filtered: number;
-  };
-}
+import {
+  IOpenLibrarySearchDoc,
+  IOpenLibrarySearchResponse,
+  ISearchResult,
+  ISearchResponse,
+} from "../../types/search";
 
 class BookSearchService {
   private readonly MAX_FETCH_ATTEMPTS = 3;
@@ -48,7 +12,7 @@ class BookSearchService {
   /**
    * Validates if a book document has all required fields
    */
-  private isValidBook(doc: OpenLibrarySearchDoc): boolean {
+  private isValidBook(doc: IOpenLibrarySearchDoc): boolean {
     // Must have title
     if (!doc.title || doc.title.trim() === "") {
       return false;
@@ -82,7 +46,7 @@ class BookSearchService {
   /**
    * Normalizes OpenLibrary document to our format
    */
-  private normalizeBook(doc: OpenLibrarySearchDoc): SearchResult {
+  private normalizeBook(doc: IOpenLibrarySearchDoc): ISearchResult {
     const validAuthors = doc.author_name!.filter(
       (author) =>
         author &&
@@ -110,7 +74,7 @@ class BookSearchService {
     title: string,
     page: number,
     limit: number,
-  ): Promise<OpenLibrarySearchResponse> {
+  ): Promise<IOpenLibrarySearchResponse> {
     try {
       const response = await openLibraryClient.searchByTitle(
         title,
@@ -133,9 +97,9 @@ class BookSearchService {
     title: string,
     page: number = 1,
     limit: number = 10,
-  ): Promise<SearchResponse> {
+  ): Promise<ISearchResponse> {
     let currentPage = page;
-    let validBooks: SearchResult[] = [];
+    let validBooks: ISearchResult[] = [];
     let totalFound = 0;
     let totalFiltered = 0;
     let attempts = 0;
@@ -207,9 +171,9 @@ class BookSearchService {
     author: string,
     page: number = 1,
     limit: number = 10,
-  ): Promise<SearchResponse> {
+  ): Promise<ISearchResponse> {
     let currentPage = page;
-    let validBooks: SearchResult[] = [];
+    let validBooks: ISearchResult[] = [];
     let totalFound = 0;
     let totalFiltered = 0;
     let attempts = 0;
@@ -281,7 +245,7 @@ class BookSearchService {
     author: string,
     page: number,
     limit: number,
-  ): Promise<OpenLibrarySearchResponse> {
+  ): Promise<IOpenLibrarySearchResponse> {
     try {
       const response = await openLibraryClient.searchByAuthor(
         author,
