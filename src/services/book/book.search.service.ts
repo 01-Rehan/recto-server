@@ -60,10 +60,11 @@ class BookSearchService {
     return {
       openLibraryId: normalizedId,
       title: doc.title.trim(),
-      author: validAuthors.map((a) => a.trim()),
+      author: validAuthors.map((a) => a.trim()), // Keep as 'author' for API consistency
       coverImage: `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`,
       publishedYear: doc.first_publish_year,
       isbn: doc.isbn?.slice(0, 3), // Limit to first 3 ISBNs
+      authors: validAuthors.map((a) => a.trim()), // Also add 'authors' for frontend compatibility
     };
   }
 

@@ -36,6 +36,7 @@ export interface ISearchResult {
   openLibraryId: string;
   title: string;
   author: string[];
+  authors?: string[]; // Added for frontend compatibility
   coverImage: string;
   publishedYear?: number;
   isbn?: string[];
