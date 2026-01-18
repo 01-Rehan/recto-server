@@ -95,6 +95,8 @@ class BlogService {
     page: number = 1,
     limit: number = 10,
     published: "true" | "false" | "both" = "true",
+    sort: string = "createdAt",
+    order: "asc" | "desc" = "desc",
   ) {
     const skip = (page - 1) * limit;
 
@@ -106,9 +108,16 @@ class BlogService {
     }
     // If "both", don't add any filter
 
+    // Build sort object
+    const sortObj: any = {};
+    const sortField = ["createdAt", "updatedAt", "title"].includes(sort)
+      ? sort
+      : "createdAt";
+    sortObj[sortField] = order === "asc" ? 1 : -1;
+
     const blogs = await BlogModel.find(query)
       .populate("author_id", "username avatarImage _id")
-      .sort({ createdAt: -1 })
+      .sort(sortObj)
       .skip(skip)
       .limit(limit)
       .lean();

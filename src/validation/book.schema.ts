@@ -57,7 +57,17 @@ class BookValidationSchema {
           })
           .min(2, "Title must be at least 2 characters")
           .max(200, "Title must not exceed 200 characters")
-          .trim(),
+          .trim()
+          .optional(),
+        genre: z
+          .string({
+            message: "Genre for filtering",
+          })
+          .max(100, "Genre must not exceed 100 characters")
+          .trim()
+          .optional(),
+        sort: z.enum(["averageRating", "releaseDate", "createdAt"]).optional(),
+        order: z.enum(["asc", "desc"]).optional().default("desc"),
         page: z
           .string()
           .optional()

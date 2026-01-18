@@ -7,6 +7,7 @@ import { ValidatedRequest } from "../types/typedRequest";
 import { bookServices } from "../services/book/book.service";
 import { affiliateService } from "../services/book/affiliate.service";
 import bookSearchService from "../services/book/book.search.service";
+import bookDatabaseSearchService from "../services/book/book.database.search.service";
 import Book from "../models/books.model";
 import BookValidationSchema from "../validation/book.schema";
 
@@ -123,27 +124,75 @@ export const searchBooksController = asyncHandler(
     req: ValidatedRequest<typeof BookValidationSchema.searchBooks>,
     res: Response,
   ) => {
-    const { title, page, limit } = req.query as {
-      title: string;
-      page: number;
-      limit: number;
+    const { title, genre, sort, order, page, limit } = req.query as {
+      title?: string;
+      genre?: string;
+      sort?: string;
+      order?: "asc" | "desc";
+      page?: number;
+      limit?: number;
     };
 
-    const result = await bookSearchService.searchBooksByTitle(
-      title,
-      page,
-      limit,
-    );
+    // If genre is provided, use OpenLibrary genre search
+    if (genre && !sort) {
+      const result = await bookSearchService.searchByGenre(
+        genre,
+        page || 1,
+        limit || 6,
+      );
 
-    return res
-      .status(200)
-      .json(
+      return res.status(200).json(
         new ApiResponse(
           200,
           result,
-          `Found ${result.books.length} books matching "${title}"`,
+          `Found ${result.books.length} books in genre "${genre}"`,
         ),
       );
+    }
+
+    // If sort or order is provided (for filtering database), use database search
+    if (sort) {
+      const result = await bookDatabaseSearchService.searchBooks({
+        genre,
+        sort: sort as "averageRating" | "releaseDate" | "createdAt" | undefined,
+        order: (order || "desc") as "asc" | "desc",
+        limit: limit || 6,
+        skip: ((page || 1) - 1) * (limit || 6),
+      });
+
+      return res.status(200).json(
+        new ApiResponse(
+          200,
+          {
+            results: result.results,
+            pagination: result.pagination,
+          },
+          `Found ${result.results.length} books`,
+        ),
+      );
+    }
+
+    // If title is provided, use OpenLibrary title search
+    if (title) {
+      const result = await bookSearchService.searchBooksByTitle(
+        title,
+        page || 1,
+        limit || 10,
+      );
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            result,
+            `Found ${result.books.length} books matching "${title}"`,
+          ),
+        );
+    }
+
+    // If nothing provided, return error
+    throw new ApiError(400, "Either title or genre parameter is required");
   },
 );
 

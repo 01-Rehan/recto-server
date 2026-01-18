@@ -94,6 +94,11 @@ class BlogValidationSchema {
             .enum(["true", "false", "both"])
             .optional()
             .default("true"),
+          sort: z
+            .enum(["createdAt", "updatedAt", "title"])
+            .optional()
+            .default("createdAt"),
+          order: z.enum(["asc", "desc"]).optional().default("desc"),
         })
         .strict(),
     })

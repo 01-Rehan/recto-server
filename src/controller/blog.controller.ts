@@ -43,12 +43,20 @@ export const getAllBlogsController = asyncHandler(
     req: ValidatedRequest<typeof blogValidationSchema.getAllBlogs>,
     res: Response,
   ) => {
-    const { page = 1, limit = 10, published = "true" } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      published = "true",
+      sort = "createdAt",
+      order = "desc",
+    } = req.query;
 
     const result = await blogService.getAllBlogs(
       page as number,
       limit as number,
       published as "true" | "false" | "both",
+      sort as string,
+      order as "asc" | "desc",
     );
 
     return res

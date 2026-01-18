@@ -155,7 +155,7 @@ export const reorderBooksController = asyncHandler(
 // Get public lists (for discovery)
 export const getPublicListsController = asyncHandler(
   async (req: CustomRequest, res: Response) => {
-    const limit = parseInt(req.query.limit as string) || 20;
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
     const skip = parseInt(req.query.skip as string) || 0;
 
     const lists = await listService.getPublicLists(limit, skip);
