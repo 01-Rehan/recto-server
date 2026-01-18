@@ -196,11 +196,12 @@ export const changePassword = asyncHandler(
 
 export const updateProfile = asyncHandler(
   async (req: CustomRequest, res: Response) => {
-    const { bio, userName } = req.body;
+    const { fullName, bio, userName } = req.body;
     const userId = req.user?._id as string;
 
     const userResponse = await userServices.updateProfile(
       userId,
+      fullName,
       bio,
       userName,
     );

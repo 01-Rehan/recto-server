@@ -89,8 +89,9 @@ class UserServices {
 
   updateProfile = async (
     userId: string,
-    bio?: string,
-    userName?: string,
+    fullName: string,
+    bio: string,
+    userName: string,
   ) => {
     const user = await User.findById(userId);
     if (!user) throw new ApiError(404, "User not found");
@@ -100,6 +101,7 @@ class UserServices {
       if (!isAvailable) throw new ApiError(400, "Username already exists");
       user.userName = userName.trim().toLowerCase();
     }
+    if (fullName) user.fullName = fullName.trim();
     if (bio) user.bio = bio.trim();
 
     await user.save();

@@ -112,6 +112,7 @@ class GoogleAuthentication {
 
         user = await User.create({
           email: googleUser.email,
+          fullName: googleUser.name,
           googleId: googleUser.id, // SAVE THIS!
           userName: googleUser.email.split("@")[0],
           avatarImage,
