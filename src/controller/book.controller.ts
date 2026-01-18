@@ -144,7 +144,10 @@ export const searchBooksController = asyncHandler(
       return res.status(200).json(
         new ApiResponse(
           200,
-          result,
+          {
+            results: result.books,
+            pagination: result.pagination,
+          },
           `Found ${result.books.length} books in genre "${genre}"`,
         ),
       );
