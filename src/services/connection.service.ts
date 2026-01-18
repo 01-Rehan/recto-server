@@ -32,7 +32,7 @@ class ConnectionServices {
     const populateField = type === "followers" ? "followerId" : "followingId";
 
     return await FollowerModel.find(query)
-      .populate(populateField, "userName fullName avatarImage")
+      .populate(populateField, "userName avatarImage")
       .lean();
   };
 

@@ -15,7 +15,6 @@ export interface TypedRequest<
     email: string;
     role: string;
     userName: string;
-    fullName: string;
     [key: string]: any;
   };
 }

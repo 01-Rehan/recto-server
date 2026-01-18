@@ -266,7 +266,7 @@ class ListService {
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip)
-      .populate("user_id", "userName fullName avatarImage");
+      .populate("user_id", "userName avatarImage");
 
     return lists;
   }

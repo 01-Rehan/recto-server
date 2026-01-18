@@ -19,7 +19,14 @@ class UserValidation {
     .object({
       body: z.object({
         email: z.email(),
-        fullName: z.string({ message: "Full name is required" }),
+        userName: z
+          .string({ message: "Username is required" })
+          .min(3)
+          .max(30)
+          .regex(
+            /^[a-zA-Z0-9_]+$/,
+            "Username can only contain letters, numbers, and underscores",
+          ),
         password: z
           .string({ message: "Password is required" })
           .min(8, "Password must be at least 8 characters long"),
@@ -107,7 +114,6 @@ class UserValidation {
     .object({
       body: z
         .object({
-          fullName: z.string().trim().min(1).optional(),
           bio: z
             .string()
             .max(300, "Bio cannot exceed 300 characters")
@@ -124,13 +130,10 @@ class UserValidation {
             .optional(),
         })
         .refine(
-          (data) =>
-            data.fullName !== undefined ||
-            data.bio !== undefined ||
-            data.userName !== undefined,
+          (data) => data.bio !== undefined || data.userName !== undefined,
           {
             message:
-              "At least one field (fullName, bio, or userName) must be provided for update",
+              "At least one field (bio or userName) must be provided for update",
           },
         ),
       query: z.object({}).optional(),
