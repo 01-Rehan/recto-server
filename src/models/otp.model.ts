@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 
 export interface IOTP extends Document {
   email: string;
-  fullName: string;
+  userName?: string;
   hashedPassword: string;
   hashedCode: string;
   expiresAt: Date;
@@ -22,7 +22,7 @@ const OTPSchema = new Schema<IOTP, Model<IOTP, {}, IOTPMethods>, IOTPMethods>(
       required: true,
       index: true,
     },
-    fullName: {
+    userName: {
       type: String,
       required: false,
     },

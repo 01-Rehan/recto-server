@@ -14,8 +14,8 @@ const options = {
 };
 
 export const signup = asyncHandler(async (req: Request, res: Response) => {
-  const { email, fullName, password } = req.body;
-  const OTPresponse = await userServices.signUp(email, fullName, password);
+  const { email, userName, password } = req.body;
+  const OTPresponse = await userServices.signUp(email, userName, password);
   res
     .status(200)
     .json(new ApiResponse(201, OTPresponse, "OTP sent successfully"));
@@ -196,12 +196,11 @@ export const changePassword = asyncHandler(
 
 export const updateProfile = asyncHandler(
   async (req: CustomRequest, res: Response) => {
-    const { fullName, bio, userName } = req.body;
+    const { bio, userName } = req.body;
     const userId = req.user?._id as string;
 
     const userResponse = await userServices.updateProfile(
       userId,
-      fullName,
       bio,
       userName,
     );

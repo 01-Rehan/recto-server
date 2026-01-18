@@ -12,13 +12,18 @@ import {
 import jwt from "jsonwebtoken";
 
 class UserServices {
-  signUp = async (email: string, fullName: string, password: string) => {
+  signUp = async (email: string, userName: string, password: string) => {
     const exitstedUser = await User.findOne({ email });
     if (exitstedUser) throw new ApiError(400, "User already exists");
 
+    const normalizedUserName = userName.trim().toLowerCase();
+    validateUsername(normalizedUserName);
+    const existingUserName = await User.findOne({ userName: normalizedUserName });
+    if (existingUserName) throw new ApiError(400, "Username already exists");
+
     const { saveOTP: otpDoc } = await sendOTPforVerification(
       email,
-      fullName,
+      normalizedUserName,
       password,
     );
     const otpObject = otpDoc.toObject();
@@ -34,7 +39,7 @@ class UserServices {
     const [user] = await User.insertMany([
       {
         email,
-        fullName: pendingOTP.fullName,
+        userName: pendingOTP.userName,
         hashedPassword: pendingOTP.hashedPassword, // This comes from the temporary OTP document
         isVerified: true,
       },
@@ -84,9 +89,8 @@ class UserServices {
 
   updateProfile = async (
     userId: string,
-    fullName: string,
-    bio: string,
-    userName: string,
+    bio?: string,
+    userName?: string,
   ) => {
     const user = await User.findById(userId);
     if (!user) throw new ApiError(404, "User not found");
@@ -96,7 +100,6 @@ class UserServices {
       if (!isAvailable) throw new ApiError(400, "Username already exists");
       user.userName = userName.trim().toLowerCase();
     }
-    if (fullName) user.fullName = fullName.trim();
     if (bio) user.bio = bio.trim();
 
     await user.save();

@@ -14,11 +14,12 @@ const userSchema = new Schema<
   {
     userName: {
       type: String,
+      required: [true, "Username is required"],
       unique: true, // Note: Custom error messages for 'unique' require a plugin or controller logic
     },
     fullName: {
       type: String,
-      required: [true, "Full name is required"],
+      default: null,
     },
     email: {
       type: String,
@@ -77,31 +78,33 @@ userSchema.pre("save", async function () {
   try {
     // Auto-generate a unique username if missing
     if (!this.userName || this.userName.trim() === "") {
-      const fullName: string = this.fullName || "user";
-      const baseRaw = fullName.toLowerCase().replace(/[^a-z0-9_.]/g, "");
+      const baseSource: string = this.email?.split("@")[0] || "user";
+      const baseRaw = baseSource.toLowerCase().replace(/[^a-z0-9_.]/g, "");
       const base = baseRaw.slice(0, 15) || "user";
-      
+
       let generated = false;
       for (let i = 0; i < 5; i++) {
         const suffix = crypto.randomBytes(2).toString("hex");
         const maxBaseLen = Math.max(1, 20 - 1 - suffix.length);
         const candidate = `${base.slice(0, maxBaseLen)}_${suffix}`;
-        const exists = await (this.constructor as mongoose.Model<IUser>).exists({ 
-          userName: candidate 
-        });
+        const exists = await (this.constructor as mongoose.Model<IUser>).exists(
+          {
+            userName: candidate,
+          },
+        );
         if (!exists) {
           this.userName = candidate;
           generated = true;
           break;
         }
       }
-      
+
       // If still unset after attempts, set a fallback
       if (!generated) {
         this.userName = `user_${crypto.randomBytes(3).toString("hex")}`;
       }
     }
-    
+
     // Hash password if modified
     if (!this.isModified("hashedPassword")) return;
     if (this.hashedPassword) {

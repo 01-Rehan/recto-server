@@ -3,7 +3,7 @@ import { ROLES as UserRoles } from "../constant";
 
 export interface IUser extends Document {
   userName: string;
-  fullName: string;
+  fullName?: string | null;
   email: string;
   hashedPassword: string;
   googleId?: string | undefined; // Optional field

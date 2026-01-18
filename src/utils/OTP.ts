@@ -121,7 +121,7 @@ export const sendOTP = async (userEmail: string, code: string) => {
 
 export const sendOTPforVerification = async (
   email: string,
-  fullName?: string,
+  userName?: string,
   password?: string,
 ) => {
   if (!email) throw new ApiError(400, "Email is required");
@@ -132,7 +132,7 @@ export const sendOTPforVerification = async (
     // storing OTP temporary
     const saveOTP = await OTPModel.create({
       email,
-      ...(fullName && { fullName }),
+      ...(userName && { userName }),
       ...(password && { hashedPassword: password }),
       hashedCode: code,
     });
