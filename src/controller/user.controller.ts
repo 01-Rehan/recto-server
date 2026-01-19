@@ -24,10 +24,15 @@ export const signup = asyncHandler(async (req: Request, res: Response) => {
 export const VerifyOTPSaveUser = asyncHandler(
   async (req: Request, res: Response) => {
     const { email, otp } = req.body;
-    const userData = await userServices.VerifyOTPandSignUp(email, otp);
+    const { accessToken, refreshToken, userData } =
+      await userServices.VerifyOTPandSignUp(email, otp);
     res
       .status(200)
-      .json(new ApiResponse(200, userData, "User verified successfully"));
+      .cookie("refreshToken", refreshToken, options)
+      .cookie("accessToken", accessToken, options)
+      .json(
+        new ApiResponse(200, { user: userData }, "User verified successfully"),
+      );
   },
 );
 
@@ -43,17 +48,7 @@ export const signin = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .cookie("refreshToken", refreshToken, options)
     .cookie("accessToken", accessToken, options)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          user,
-          accessToken,
-          refreshToken,
-        },
-        "User logged in successfully",
-      ),
-    );
+    .json(new ApiResponse(200, { user }, "User logged in successfully"));
 });
 
 export const logout = asyncHandler(
@@ -133,16 +128,7 @@ export const refreshAccessToken = asyncHandler(
       .status(200)
       .cookie("refreshToken", newRefreshToken, options)
       .cookie("accessToken", accessToken, options)
-      .json(
-        new ApiResponse(
-          200,
-          {
-            accessToken,
-            newRefreshToken,
-          },
-          "Access token refreshed successfully",
-        ),
-      );
+      .json(new ApiResponse(200, {}, "Access token refreshed successfully"));
   },
 );
 
